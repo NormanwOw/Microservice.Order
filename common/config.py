@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_PASSWORD: str
 
+    KAFKA_NOTIFICATION_TOPIC: str
+    KAFKA_HOSTS: list[str]
+
 
 settings = Settings()
 

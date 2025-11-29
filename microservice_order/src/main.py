@@ -3,7 +3,7 @@ from typing import AsyncIterator
 
 from fastapi import FastAPI
 
-from src.infrastructure.logger.impl import logger
+from common.logger.impl import logger
 
 
 @asynccontextmanager
