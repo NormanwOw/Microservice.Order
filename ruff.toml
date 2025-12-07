@@ -9,3 +9,6 @@ select = [
 ignore = []
 
 exclude = ["__init__.py"]
+
+[format]
+quote-style = "single"
