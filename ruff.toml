@@ -7,3 +7,5 @@ select = [
 ]
 
 ignore = []
+
+exclude = ["__init__.py"]
