@@ -10,11 +10,10 @@ class Message(BaseModel):
 
 
 class EventMessage(Message):
-    event_id: UUID = Field(default_factory=uuid4)
+    event_type: str
 
 
 class OrderMessage(EventMessage):
     order_id: UUID
-    event_type: str
     aggregate_type: str
     payload: list[Product]
