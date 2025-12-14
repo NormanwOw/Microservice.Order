@@ -10,10 +10,10 @@ from src.presentation.dependencies.order_dependencies import OrderDependencies
 from src.presentation.exception_handler import exception_handler
 from src.presentation.schemas import CreateOrderSchema
 
-router = APIRouter(prefix=f'/api/v{VERSION}', tags=['Orders'])
+router = APIRouter(prefix=f'/api/v{VERSION}/orders', tags=['Orders'])
 
 
-@router.post(path='/orders', summary='Создание заказа')
+@router.post(path='', summary='Создание заказа')
 @exception_handler
 async def create_order_endpoint(
     order_data: CreateOrderSchema,

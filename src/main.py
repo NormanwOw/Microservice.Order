@@ -12,6 +12,7 @@ from src.infrastructure.messaging.kafka_router import KafkaMessageRouter
 from src.infrastructure.messaging.producer import KafkaProducer
 from src.infrastructure.uow.impl import get_uow
 from src.presentation.routers.order_router import router as order_router
+from src.presentation.routers.product_router import router as product_router
 
 
 @asynccontextmanager
@@ -28,6 +29,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title='Order Service', version='0.0.1', lifespan=lifespan)
 app.include_router(order_router)
+app.include_router(product_router)
 
 if __name__ == '__main__':
     uvicorn.run(app, host='127.0.0.1', port=8000)
