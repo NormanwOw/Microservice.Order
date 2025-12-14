@@ -28,25 +28,35 @@ class CUModel:
 
 
 class ProductModel(Base, CUModel):
-    __tablename__ = "products"
+    __tablename__ = 'products'
 
     name: Mapped[str] = mapped_column(nullable=False)
     price: Mapped[Decimal] = mapped_column(NUMERIC(10, 2), nullable=False)
     currency: Mapped[str] = mapped_column(Enum(Currency), nullable=False)
+    stocks: Mapped[int] = mapped_column(nullable=False, default=0)
 
-    order_items: Mapped[List["OrderItemModel"]] = relationship(
-        back_populates="product", lazy="selectin"
+    order_items: Mapped[List['OrderItemModel']] = relationship(
+        back_populates='product', lazy='selectin'
     )
+
+    def to_domain(self) -> Product:
+        return Product(
+            id=self.id,
+            name=self.name,
+            price=self.price,
+            currency=self.currency,
+            quantity=self.stocks,
+        )
 
 
 class OrderItemModel(Base, CUModel):
-    __tablename__ = "order_items"
+    __tablename__ = 'order_items'
 
     order_id: Mapped[uuid] = mapped_column(
-        ForeignKey("orders.id"), nullable=False, index=True
+        ForeignKey('orders.id', ondelete='CASCADE'), nullable=False, index=True
     )
     product_id: Mapped[str] = mapped_column(
-        ForeignKey("products.id"), nullable=False, index=True
+        ForeignKey('products.id', ondelete='SET NULL'), nullable=False, index=True
     )
     name: Mapped[str] = mapped_column(nullable=False, index=True)
     quantity: Mapped[int] = mapped_column(nullable=True)
@@ -54,38 +64,39 @@ class OrderItemModel(Base, CUModel):
     currency: Mapped[str] = mapped_column(Enum(Currency), nullable=False)
 
     product: Mapped[ProductModel] = relationship(
-        back_populates="order_items",
-        lazy="selectin",
+        back_populates='order_items',
+        lazy='selectin',
     )
-    order: Mapped["OrderModel"] = relationship(back_populates="items", lazy="selectin")
+    order: Mapped['OrderModel'] = relationship(back_populates='items', lazy='selectin')
 
     @classmethod
-    def from_domain(cls, product: Product, order: Order) -> "OrderItemModel":
+    def from_domain(cls, product: Product, order: Order) -> 'OrderItemModel':
         return cls(
             product_id=product.id,
             order_id=order.order_id,
             name=product.name,
             price=Decimal(product.price),
             currency=product.currency,
+            quantity=product.quantity,
         )
 
 
 class OrderModel(Base, CUModel):
-    __tablename__ = "orders"
+    __tablename__ = 'orders'
 
     status: Mapped[str] = mapped_column(Enum(OrderStatus), nullable=False, index=True)
 
     items: Mapped[List[OrderItemModel]] = relationship(
-        back_populates="order", lazy="selectin"
+        back_populates='order', lazy='selectin'
     )
 
     @classmethod
-    def from_domain(cls, order: Order, status: OrderStatus) -> "OrderModel":
+    def from_domain(cls, order: Order, status: OrderStatus) -> 'OrderModel':
         return cls(id=order.order_id, status=status)
 
 
 class OutboxModel(Base, CUModel):
-    __tablename__ = "outbox"
+    __tablename__ = 'outbox'
 
     topic: Mapped[str] = mapped_column(nullable=False)
     message: Mapped[dict] = mapped_column(JSONB, nullable=False)
@@ -93,33 +104,35 @@ class OutboxModel(Base, CUModel):
 
 
 class ProcessedMessagesModel(Base, CUModel):
-    __tablename__ = "processed_messages"
+    __tablename__ = 'processed_messages'
 
 
 class CreateOrderSagaStepModel(Base, CUModel):
-    __tablename__ = "create_order_saga_step"
+    __tablename__ = 'create_order_saga_step'
 
     saga_id: Mapped[uuid] = mapped_column(
-        ForeignKey("create_order_saga.id"), nullable=False, index=True
+        ForeignKey('create_order_saga.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True,
     )
     event_type: Mapped[str] = mapped_column(Enum(OrderStatus))
     status: Mapped[str] = mapped_column(Enum(CreateOrderStepStatus), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
-    saga: Mapped["CreateOrderSagaModel"] = relationship(
-        back_populates="steps", lazy="selectin"
+    saga: Mapped['CreateOrderSagaModel'] = relationship(
+        back_populates='steps', lazy='selectin'
     )
 
 
 class CreateOrderSagaModel(Base, CUModel):
-    __tablename__ = "create_order_saga"
+    __tablename__ = 'create_order_saga'
 
     order_id: Mapped[uuid] = mapped_column(
-        ForeignKey("orders.id"), nullable=False, index=True
+        ForeignKey('orders.id'), nullable=False, index=True
     )
     state: Mapped[str] = mapped_column(Enum(OrderStatus), nullable=False)
     current_step_id: Mapped[uuid] = mapped_column(UUID)
 
-    steps: Mapped[List["CreateOrderSagaStepModel"]] = relationship(
-        back_populates="saga", lazy="selectin"
+    steps: Mapped[List['CreateOrderSagaStepModel']] = relationship(
+        back_populates='saga', lazy='selectin'
     )
