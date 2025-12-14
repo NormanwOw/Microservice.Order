@@ -14,8 +14,8 @@ class KafkaConsumer(AIOKafkaConsumer):
             settings.ANALYTIC_EVENTS_TOPIC,
             settings.NOTIFICATION_EVENTS_TOPIC,
             bootstrap_servers=settings.KAFKA_HOSTS,
-            group_id="order_group",
+            group_id='order_group',
             enable_auto_commit=False,
-            auto_offset_reset="earliest",
+            auto_offset_reset='earliest',
             value_deserializer=lambda msg: json.loads(msg.decode()),
         )
