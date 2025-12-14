@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Any, TypeVar
+from uuid import UUID
 
 from sqlalchemy.orm import InstrumentedAttribute
 
-from src.infrastructure.models import Base
+from src.infrastructure.messaging.messages import OrderMessage
+from src.infrastructure.models import Base, CreateOrderSagaModel, ProductModel
 
-T = TypeVar("T", bound=Base)
+T = TypeVar('T', bound=Base)
 
 
 class ISQLAlchemyRepository(ABC):
@@ -55,7 +57,23 @@ class IProcessedMessagesModelRepository(ISQLAlchemyRepository, ABC): ...
 class IOrderRepository(ISQLAlchemyRepository, ABC): ...
 
 
-class ICreateOrderSagaRepository(ISQLAlchemyRepository, ABC): ...
+class IOrderItemRepository(ISQLAlchemyRepository, ABC): ...
+
+
+class ICreateOrderSagaRepository(ISQLAlchemyRepository, ABC):
+    @abstractmethod
+    async def create(self, message: OrderMessage):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_by_order_id(self, order_id: UUID) -> CreateOrderSagaModel:
+        raise NotImplementedError
 
 
 class ICreateOrderSagaStepRepository(ISQLAlchemyRepository, ABC): ...
+
+
+class IProductRepository(ISQLAlchemyRepository, ABC):
+    @abstractmethod
+    async def find_exists_by_ids(self, ids: list[UUID]) -> list[ProductModel]:
+        raise NotImplementedError
