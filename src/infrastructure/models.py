@@ -1,15 +1,23 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
-from typing import List
+from typing import List, Optional
 
-from sqlalchemy import UUID, DateTime, Enum, ForeignKey
+from sqlalchemy import JSON, UUID, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB, NUMERIC
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from src.domain.aggregates import Order
 from src.domain.entities import Product
-from src.domain.enums import CreateOrderStepStatus, Currency, OrderStatus
+from src.domain.enums import (
+    AggregateTypes,
+    CreateOrderSagaStatus,
+    CreateOrderStepStatus,
+    Currency,
+    EventTypes,
+    event_type_mapper,
+)
+from src.domain.events import DomainEvent
 
 
 class Base(DeclarativeBase):
@@ -25,6 +33,12 @@ class CUModel:
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, nullable=True, onupdate=datetime.now
     )
+
+
+class CustomerModel(Base, CUModel):
+    __tablename__ = 'customers'
+
+    name: Mapped[str] = mapped_column(nullable=False)
 
 
 class ProductModel(Base, CUModel):
@@ -73,7 +87,7 @@ class OrderItemModel(Base, CUModel):
     def from_domain(cls, product: Product, order: Order) -> 'OrderItemModel':
         return cls(
             product_id=product.id,
-            order_id=order.order_id,
+            order_id=order.id,
             name=product.name,
             price=Decimal(product.price),
             currency=product.currency,
@@ -84,23 +98,33 @@ class OrderItemModel(Base, CUModel):
 class OrderModel(Base, CUModel):
     __tablename__ = 'orders'
 
-    status: Mapped[str] = mapped_column(Enum(OrderStatus), nullable=False, index=True)
+    customer_id: Mapped[UUID] = mapped_column(
+        ForeignKey('customers.id', ondelete='SET NULL'), nullable=False
+    )
+    status: Mapped[str] = mapped_column(Enum(EventTypes), nullable=False, index=True)
+    version: Mapped[int] = mapped_column(nullable=False)
 
     items: Mapped[List[OrderItemModel]] = relationship(
         back_populates='order', lazy='selectin'
     )
 
     @classmethod
-    def from_domain(cls, order: Order, status: OrderStatus) -> 'OrderModel':
-        return cls(id=order.order_id, status=status)
+    def from_domain(cls, order: Order, status: EventTypes) -> 'OrderModel':
+        return cls(id=order.id, status=status, version=order.version)
 
 
 class OutboxModel(Base, CUModel):
     __tablename__ = 'outbox'
 
+    aggregate_type: Mapped[str] = mapped_column(Enum(AggregateTypes))
+    aggregate_id: Mapped[UUID] = mapped_column(nullable=False)
+    event_type: Mapped[str] = mapped_column(Enum(EventTypes))
+    aggregate_version: Mapped[int] = mapped_column(nullable=False)
     topic: Mapped[str] = mapped_column(nullable=False)
-    message: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    is_sent: Mapped[bool] = mapped_column(default=False)
+    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    published_at: Mapped[Optional[datetime]] = mapped_column(
+        default=None, nullable=True
+    )
 
 
 class ProcessedMessagesModel(Base, CUModel):
@@ -115,7 +139,7 @@ class CreateOrderSagaStepModel(Base, CUModel):
         nullable=False,
         index=True,
     )
-    event_type: Mapped[str] = mapped_column(Enum(OrderStatus))
+    event_type: Mapped[str] = mapped_column(Enum(EventTypes))
     status: Mapped[str] = mapped_column(Enum(CreateOrderStepStatus), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
@@ -130,9 +154,23 @@ class CreateOrderSagaModel(Base, CUModel):
     order_id: Mapped[uuid] = mapped_column(
         ForeignKey('orders.id'), nullable=False, index=True
     )
-    state: Mapped[str] = mapped_column(Enum(OrderStatus), nullable=False)
+    order_version: Mapped[int] = mapped_column(nullable=False)
+    state: Mapped[str] = mapped_column(Enum(CreateOrderSagaStatus), nullable=False)
     current_step_id: Mapped[uuid] = mapped_column(UUID)
 
     steps: Mapped[List['CreateOrderSagaStepModel']] = relationship(
         back_populates='saga', lazy='selectin'
     )
+
+
+class OrderEventModel(Base, CUModel):
+    __tablename__ = 'order_events'
+
+    order_id: Mapped[UUID] = mapped_column(index=True)
+    version: Mapped[int] = mapped_column()
+    event_type: Mapped[str] = mapped_column(Enum(EventTypes))
+    payload: Mapped[dict] = mapped_column(JSON)
+
+    def to_domain(self) -> DomainEvent:
+        event = event_type_mapper[self.event_type]
+        return event(**self.payload)

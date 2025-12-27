@@ -4,15 +4,19 @@ from src.infrastructure.repositories.create_order_saga_repository import (
 from src.infrastructure.repositories.create_order_saga_step_repository import (
     CreateOrderSagaStepRepository,
 )
+from src.infrastructure.repositories.customer_repository import CustomerRepository
 from src.infrastructure.repositories.interfaces import (
     ICreateOrderSagaRepository,
     ICreateOrderSagaStepRepository,
+    ICustomerRepository,
+    IOrderEventRepository,
     IOrderItemRepository,
     IOrderRepository,
     IOutboxRepository,
     IProcessedMessagesModelRepository,
     IProductRepository,
 )
+from src.infrastructure.repositories.order_event_repository import OrderEventRepository
 from src.infrastructure.repositories.order_item_repository import OrderItemRepository
 from src.infrastructure.repositories.order_repository import OrderRepository
 from src.infrastructure.repositories.outbox_repository import OutboxRepository
@@ -70,6 +74,14 @@ class UnitOfWork(IUnitOfWork):
     @property
     def create_order_saga_step(self) -> ICreateOrderSagaStepRepository:
         return CreateOrderSagaStepRepository(self.__session)
+
+    @property
+    def customers(self) -> ICustomerRepository:
+        return CustomerRepository(self.__session)
+
+    @property
+    def order_events(self) -> IOrderEventRepository:
+        return OrderEventRepository(self.__session)
 
 
 def get_uow() -> IUnitOfWork:
