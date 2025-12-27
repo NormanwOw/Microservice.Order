@@ -5,12 +5,14 @@ from src.infrastructure.repositories import interfaces as i
 
 class IUnitOfWork(ABC):
     products: i.IProductRepository
+    customers: i.ICustomerRepository
     outbox: i.IOutboxRepository
     processed_messages: i.IProcessedMessagesModelRepository
     orders: i.IOrderRepository
     order_items: i.IOrderItemRepository
     create_order_saga: i.ICreateOrderSagaRepository
     create_order_saga_step: i.ICreateOrderSagaStepRepository
+    order_events: i.IOrderEventRepository
 
     async def __aenter__(self):
         raise NotImplementedError
