@@ -6,7 +6,7 @@ from sqlalchemy.orm import InstrumentedAttribute
 
 from src.domain.aggregates import Aggregate, Order
 from src.domain.events import DomainEvent
-from src.infrastructure.models import Base, ProductModel
+from src.infrastructure.models import Base
 
 T = TypeVar('T', bound=Base)
 
@@ -51,9 +51,7 @@ class ISQLAlchemyRepository(ABC):
 
 class IOutboxRepository(ISQLAlchemyRepository, ABC):
     @abstractmethod
-    async def add_from_domain_events(
-        self, aggregate: Aggregate, domain_events: list[DomainEvent]
-    ):
+    async def add_from_domain_events(self, aggregate: Aggregate, domain_events: list[DomainEvent]):
         raise NotImplementedError
 
 
@@ -66,20 +64,12 @@ class IOrderRepository(ISQLAlchemyRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def append_events(
-        self, order_id: UUID, expected_version: int, events: list[DomainEvent]
-    ):
+    async def append_events(self, order_id: UUID, expected_version: int, events: list[DomainEvent]):
         raise NotImplementedError
 
     @abstractmethod
     async def upsert_projection(self, order: Order):
         raise NotImplementedError
-
-
-class IOrderItemRepository(ISQLAlchemyRepository, ABC): ...
-
-
-class ICustomerRepository(ISQLAlchemyRepository, ABC): ...
 
 
 class IOrderEventRepository(ISQLAlchemyRepository, ABC): ...
@@ -92,9 +82,3 @@ class ICreateOrderSagaRepository(ISQLAlchemyRepository, ABC):
 
 
 class ICreateOrderSagaStepRepository(ISQLAlchemyRepository, ABC): ...
-
-
-class IProductRepository(ISQLAlchemyRepository, ABC):
-    @abstractmethod
-    async def find_exists_by_ids(self, ids: list[UUID]) -> list[ProductModel]:
-        raise NotImplementedError
