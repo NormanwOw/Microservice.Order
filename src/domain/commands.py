@@ -16,3 +16,8 @@ class CreateOrderCommand(Command):
     products: list[Product]
     created_at: datetime = Field(default_factory=datetime.now)
     customer_id: UUID
+
+
+class SendNotifyCommand(Command):
+    user_id: UUID
+    message: str
