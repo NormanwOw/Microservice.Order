@@ -4,7 +4,7 @@ from uuid import UUID
 
 from sqlalchemy.orm import InstrumentedAttribute
 
-from src.domain.aggregates import Aggregate, Order
+from src.domain.aggregates import Order
 from src.domain.events import DomainEvent
 from src.infrastructure.models import Base
 
@@ -49,10 +49,7 @@ class ISQLAlchemyRepository(ABC):
         raise NotImplementedError
 
 
-class IOutboxRepository(ISQLAlchemyRepository, ABC):
-    @abstractmethod
-    async def add_from_domain_events(self, aggregate: Aggregate, domain_events: list[DomainEvent]):
-        raise NotImplementedError
+class IOutboxRepository(ISQLAlchemyRepository, ABC): ...
 
 
 class IProcessedMessagesModelRepository(ISQLAlchemyRepository, ABC): ...
@@ -68,7 +65,7 @@ class IOrderRepository(ISQLAlchemyRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def upsert_projection(self, order: Order):
+    async def upsert_projection(self, order: Order, customer_id: UUID):
         raise NotImplementedError
 
 
@@ -77,7 +74,7 @@ class IOrderEventRepository(ISQLAlchemyRepository, ABC): ...
 
 class ICreateOrderSagaRepository(ISQLAlchemyRepository, ABC):
     @abstractmethod
-    async def start(self, order: Order):
+    async def start(self, order: Order, customer_id: UUID):
         raise NotImplementedError
 
 
