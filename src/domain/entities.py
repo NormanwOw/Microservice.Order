@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 from uuid import UUID
 
@@ -12,3 +13,6 @@ class Product(BaseModel):
     quantity: int
     price: Decimal
     currency: Currency = Currency.USD
+
+    def to_dict(self) -> dict:
+        return json.loads(self.model_dump_json())
