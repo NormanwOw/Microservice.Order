@@ -1,3 +1,4 @@
+import json
 import uuid
 from datetime import datetime
 from uuid import UUID
@@ -10,17 +11,28 @@ from src.domain.entities import Product
 class DomainEvent(BaseModel):
     pass
 
+    def to_dict(self) -> dict:
+        return json.loads(self.model_dump_json())
 
-class OrderCreated(DomainEvent):
+
+class OrderEvent(DomainEvent):
+    order_id: UUID | None = None
+
+
+class OrderCreated(OrderEvent):
     order_id: UUID = Field(default_factory=uuid.uuid4)
-    products: list[Product]
+    products: list['Product']
     created_at: datetime = Field(default_factory=datetime.now)
     customer_id: UUID
 
 
-class OrderInitialized(DomainEvent):
-    order_id: UUID | None = None
+class OrderPayed(OrderEvent):
+    pass
 
 
-class FailedCreateOrder(DomainEvent):
-    order_id: UUID | None = None
+class PaymentCharged(OrderEvent):
+    pass
+
+
+class FailedCreateOrder(OrderEvent):
+    pass
