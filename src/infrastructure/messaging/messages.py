@@ -17,3 +17,7 @@ class OrderMessage(EventMessage):
     order_id: UUID
     aggregate_type: str
     payload: list[Product]
+
+
+class ChargedPaymentMessage(EventMessage):
+    order_id: UUID

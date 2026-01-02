@@ -1,12 +1,18 @@
 from abc import ABC, abstractmethod
-from uuid import UUID
+
+from src.domain.commands import ReserveProductsCommand, SendNotifyCommand
 
 
-class IPaymentService(ABC):
+class IPaymentService(ABC): ...
+
+
+class INotificationService(ABC):
     @abstractmethod
-    async def verify(self, order_id: UUID):
+    async def notify(self, command: SendNotifyCommand):
         raise NotImplementedError
 
+
+class IStocksServiceProxy(ABC):
     @abstractmethod
-    async def cancel(self, order_id: UUID):
+    async def reserve_products(self, command: ReserveProductsCommand):
         raise NotImplementedError

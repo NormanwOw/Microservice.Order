@@ -1,43 +1,56 @@
-import uuid
+import json
 from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from src.domain.commands import CreateOrderCommand
 from src.domain.entities import Product
-from src.domain.exceptions import ProductsDoesNotExists
+from src.domain.enums import AggregateTypes, OrderEventTypes
+from src.domain.events import (
+    DomainEvent,
+    FailedCreateOrder,
+    OrderCreated,
+    OrderPayed,
+)
+from src.domain.exceptions import EventNotSupported, OrderAlreadyExists
+from src.domain.mappers import event_type_mapper
 
 
-class Order(BaseModel):
-    order_id: UUID = Field(default_factory=uuid.uuid4)
-    customer_id: UUID
-    products: list[Product]
+class Aggregate(BaseModel):
+    id: UUID | None = None
+    status: OrderEventTypes | None = None
+    version: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.now)
+    type: AggregateTypes
 
-    async def reserve_products(self, db_products: list[Product]) -> dict[UUID, Product]:
-        id_product_mapper = {product.id: product for product in self.products}
-        if not db_products:
-            raise ProductsDoesNotExists
+    def to_dict(self) -> dict:
+        return json.loads(self.model_dump_json())
 
-        products = []
-        for product in db_products:
-            if not product.quantity:
-                continue
 
-            order_product: Product = id_product_mapper[product.id]
-            db_product: Product = product
+class Order(Aggregate):
+    products: list[Product] | None = None
+    type: AggregateTypes = AggregateTypes.ORDER
 
-            order_product.name = db_product.name
-            order_product.price = db_product.price
-            order_product.currency = db_product.currency
-            if order_product.quantity > db_product.quantity:
-                order_product.quantity = db_product.quantity
-                db_product.quantity = 0
-            else:
-                db_product.quantity -= order_product.quantity
+    def decide(self, command: CreateOrderCommand) -> list[DomainEvent]:
+        if self.id is not None:
+            raise OrderAlreadyExists
 
-            products.append(order_product)
+        return [OrderCreated(**command.model_dump())]
 
-        self.products = products
+    def apply(self, event):
+        if event.__class__.__name__ not in event_type_mapper.values():
+            raise EventNotSupported
 
-        return {product.id: product for product in db_products}
+        if isinstance(event, OrderCreated):
+            self.id = event.order_id
+            self.status = OrderEventTypes.ORDER_CREATED
+            self.products = event.products
+
+        elif isinstance(event, OrderPayed):
+            self.status = OrderEventTypes.ORDER_PAYED
+
+        elif isinstance(event, FailedCreateOrder):
+            self.status = OrderEventTypes.FAILED_CREATE_ORDER
+
+        self.version += 1
