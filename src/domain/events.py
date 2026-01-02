@@ -1,18 +1,15 @@
-import json
 import uuid
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from src.domain.base import PydanticBase
 from src.domain.entities import Product
 
 
-class DomainEvent(BaseModel):
+class DomainEvent(PydanticBase):
     pass
-
-    def to_dict(self) -> dict:
-        return json.loads(self.model_dump_json())
 
 
 class OrderEvent(DomainEvent):

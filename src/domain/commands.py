@@ -1,27 +1,24 @@
-import json
 import uuid
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from src.domain.base import PydanticBase
 from src.domain.entities import Product
 from src.domain.enums import AggregateTypes, CommandTypes
 
 
-class ExternalReference(BaseModel):
+class ExternalReference(PydanticBase):
     id: UUID
     type: AggregateTypes
     version: int
 
 
-class Command(BaseModel):
+class Command(PydanticBase):
     message_id: UUID = Field(default_factory=uuid.uuid4)
     command_type: CommandTypes
     external_reference: ExternalReference | None = None
-
-    def to_dict(self) -> dict:
-        return json.loads(self.model_dump_json())
 
 
 class CreateOrderCommand(Command):
