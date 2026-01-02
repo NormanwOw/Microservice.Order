@@ -2,16 +2,14 @@ import uuid
 from datetime import datetime
 from typing import List, Optional
 
-from sqlalchemy import JSON, UUID, DateTime, Enum, ForeignKey
+from sqlalchemy import UUID, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 from src.domain.aggregates import Order
 from src.domain.enums import (
-    AggregateTypes,
     CreateOrderSagaStatus,
     CreateOrderStepStatus,
-    MessageType,
     OrderEventTypes,
 )
 from src.domain.events import DomainEvent
@@ -45,13 +43,10 @@ class OrderModel(Base, CUModel):
 class OutboxModel(Base, CUModel):
     __tablename__ = 'outbox'
 
-    name: Mapped[str] = mapped_column(nullable=False)
-    type: Mapped[MessageType] = mapped_column(Enum(MessageType), nullable=False)
-    aggregate_type: Mapped[str] = mapped_column(Enum(AggregateTypes), nullable=False)
-    aggregate_id: Mapped[uuid.UUID] = mapped_column(UUID, nullable=False)
-    aggregate_version: Mapped[int] = mapped_column(nullable=False)
+    action: Mapped[str] = mapped_column(nullable=False)
     topic: Mapped[str] = mapped_column(nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    external_reference: Mapped[dict] = mapped_column(JSONB, nullable=False)
     published_at: Mapped[Optional[datetime]] = mapped_column(default=None, nullable=True)
 
 
@@ -93,7 +88,7 @@ class OrderEventModel(Base, CUModel):
     order_id: Mapped[uuid.UUID] = mapped_column(UUID, index=True)
     version: Mapped[int] = mapped_column()
     event_type: Mapped[str] = mapped_column(Enum(OrderEventTypes))
-    payload: Mapped[dict] = mapped_column(JSON)
+    payload: Mapped[dict] = mapped_column(JSONB)
 
     def to_domain(self) -> DomainEvent:
         event = event_type_mapper[self.event_type]
