@@ -11,6 +11,7 @@ from src.domain.enums import (
     AggregateTypes,
     CreateOrderSagaStatus,
     CreateOrderStepStatus,
+    MessageType,
     OrderEventTypes,
 )
 from src.domain.events import DomainEvent
@@ -18,7 +19,9 @@ from src.domain.mappers import event_type_mapper
 
 
 class Base(DeclarativeBase):
-    id: Mapped[UUID] = mapped_column(UUID, nullable=False, primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID, nullable=False, primary_key=True, default=uuid.uuid4
+    )
 
 
 class CUModel:
@@ -29,9 +32,7 @@ class CUModel:
 class OrderModel(Base, CUModel):
     __tablename__ = 'orders'
 
-    customer_id: Mapped[UUID] = mapped_column(
-        ForeignKey('customers.id', ondelete='SET NULL'), nullable=False
-    )
+    customer_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
     status: Mapped[str] = mapped_column(Enum(OrderEventTypes), nullable=False, index=True)
     version: Mapped[int] = mapped_column(nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
@@ -44,9 +45,10 @@ class OrderModel(Base, CUModel):
 class OutboxModel(Base, CUModel):
     __tablename__ = 'outbox'
 
-    aggregate_type: Mapped[str] = mapped_column(Enum(AggregateTypes))
-    aggregate_id: Mapped[UUID] = mapped_column(UUID, nullable=False)
-    event_or_command_type: Mapped[str] = mapped_column()
+    name: Mapped[str] = mapped_column(nullable=False)
+    type: Mapped[MessageType] = mapped_column(Enum(MessageType), nullable=False)
+    aggregate_type: Mapped[str] = mapped_column(Enum(AggregateTypes), nullable=False)
+    aggregate_id: Mapped[uuid.UUID] = mapped_column(UUID, nullable=False)
     aggregate_version: Mapped[int] = mapped_column(nullable=False)
     topic: Mapped[str] = mapped_column(nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
@@ -60,7 +62,7 @@ class ProcessedMessagesModel(Base, CUModel):
 class CreateOrderSagaStepModel(Base, CUModel):
     __tablename__ = 'create_order_saga_step'
 
-    saga_id: Mapped[UUID] = mapped_column(
+    saga_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey('create_order_saga.id', ondelete='CASCADE'),
         nullable=False,
         index=True,
@@ -75,10 +77,10 @@ class CreateOrderSagaStepModel(Base, CUModel):
 class CreateOrderSagaModel(Base, CUModel):
     __tablename__ = 'create_order_saga'
 
-    order_id: Mapped[UUID] = mapped_column(ForeignKey('orders.id'), nullable=False, index=True)
+    order_id: Mapped[uuid.UUID] = mapped_column(ForeignKey('orders.id'), nullable=False, index=True)
     order_version: Mapped[int] = mapped_column(nullable=False)
     state: Mapped[str] = mapped_column(Enum(CreateOrderSagaStatus), nullable=False)
-    current_step_id: Mapped[UUID] = mapped_column(UUID)
+    current_step_id: Mapped[uuid.UUID] = mapped_column(UUID)
     context: Mapped[dict] = mapped_column(JSONB, nullable=False)
     steps: Mapped[List['CreateOrderSagaStepModel']] = relationship(
         back_populates='saga', lazy='selectin'
@@ -88,7 +90,7 @@ class CreateOrderSagaModel(Base, CUModel):
 class OrderEventModel(Base, CUModel):
     __tablename__ = 'order_events'
 
-    order_id: Mapped[UUID] = mapped_column(UUID, index=True)
+    order_id: Mapped[uuid.UUID] = mapped_column(UUID, index=True)
     version: Mapped[int] = mapped_column()
     event_type: Mapped[str] = mapped_column(Enum(OrderEventTypes))
     payload: Mapped[dict] = mapped_column(JSON)
