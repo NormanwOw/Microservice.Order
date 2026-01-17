@@ -16,6 +16,7 @@ class StocksServiceProxy(IStocksServiceProxy):
             action=CommandTypes.RESERVE_PRODUCTS,
             topic=self.topic,
             external_reference=command.external_reference.to_dict(),
-            payload=[product.to_dict() for product in command.products],
+            producer='order-service',
+            payload={'products': [product.to_dict() for product in command.products]},
         )
         await self.uow.outbox.add(for_outbox)
