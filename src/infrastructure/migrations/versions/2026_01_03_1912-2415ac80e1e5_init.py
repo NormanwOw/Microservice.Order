@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: d3aa0a427bf6
+Revision ID: 2415ac80e1e5
 Revises:
-Create Date: 2026-01-02 18:11:03.073677
+Create Date: 2026-01-03 19:12:30.999098
 
 """
 
@@ -13,7 +13,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = 'd3aa0a427bf6'
+revision: str = '2415ac80e1e5'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,10 +37,10 @@ def upgrade() -> None:
             ),
             nullable=False,
         ),
-        sa.Column('payload', sa.JSON(), nullable=False),
+        sa.Column('payload', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_index(op.f('ix_order_events_order_id'), 'order_events', ['order_id'], unique=False)
@@ -61,32 +61,30 @@ def upgrade() -> None:
         sa.Column('version', sa.Integer(), nullable=False),
         sa.Column('payload', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_index(op.f('ix_orders_customer_id'), 'orders', ['customer_id'], unique=False)
     op.create_index(op.f('ix_orders_status'), 'orders', ['status'], unique=False)
     op.create_table(
         'outbox',
-        sa.Column('name', sa.String(), nullable=False),
-        sa.Column('type', sa.Enum('EVENT', 'COMMAND', name='messagetype'), nullable=False),
-        sa.Column('aggregate_type', sa.Enum('ORDER', name='aggregatetypes'), nullable=False),
-        sa.Column('aggregate_id', sa.UUID(), nullable=False),
-        sa.Column('aggregate_version', sa.Integer(), nullable=False),
+        sa.Column('action', sa.String(), nullable=False),
         sa.Column('topic', sa.String(), nullable=False),
         sa.Column('payload', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
-        sa.Column('published_at', sa.DateTime(), nullable=True),
+        sa.Column('external_reference', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
+        sa.Column('producer', sa.String(), nullable=False),
+        sa.Column('published_at', sa.DateTime(timezone=True), nullable=True),
         sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_table(
         'processed_messages',
         sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint('id'),
     )
     op.create_table(
@@ -108,8 +106,8 @@ def upgrade() -> None:
         sa.Column('current_step_id', sa.UUID(), nullable=False),
         sa.Column('context', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(
             ['order_id'],
             ['orders.id'],
@@ -142,8 +140,8 @@ def upgrade() -> None:
         ),
         sa.Column('payload', postgresql.JSONB(astext_type=sa.Text()), nullable=False),
         sa.Column('id', sa.UUID(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(['saga_id'], ['create_order_saga.id'], ondelete='CASCADE'),
         sa.PrimaryKeyConstraint('id'),
     )
