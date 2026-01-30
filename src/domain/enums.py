@@ -9,7 +9,7 @@ class OrderEventTypes(str, Enum):
 
 
 class EventTypes(str, Enum):
-    PAYMENT_CHARGED = 'PaymentCharged'
+    PRODUCTS_RESERVED = 'ProductsReserved'
 
 
 class CommandTypes(str, Enum):

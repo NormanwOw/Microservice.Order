@@ -5,9 +5,12 @@ from src.domain.enums import EventTypes
 from src.presentation.dependencies.order_dependencies import OrderDependencies
 
 
-@dispatcher.register(EventTypes.PAYMENT_CHARGED)
-async def handle_payment_charged(
+@dispatcher.register(EventTypes.PRODUCTS_RESERVED)
+async def handle_products_reserved(
     message: dict,
     saga: CreateOrderSaga = DispDepends(OrderDependencies.create_order_saga),
 ):
     pass
+
+
+#

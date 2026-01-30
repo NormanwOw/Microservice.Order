@@ -27,7 +27,7 @@ class OrderPayed(OrderEvent):
     pass
 
 
-class PaymentCharged(OrderEvent):
+class ProductsReserved(OrderEvent):
     pass
 
 
