@@ -1,14 +1,15 @@
+import os
+import signal
 from typing import Awaitable, Callable, Dict
 
 from src.application.disp_depends import resolve_dependencies
 from src.infrastructure.logger.impl import logger
 from src.infrastructure.logger.interfaces import ILogger
-from src.infrastructure.models import ProcessedMessagesModel
 from src.infrastructure.uow.impl import get_uow
 from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
-class EventDispatcher:
+class BrokerDispatcher:
     def __init__(self, uow: IUnitOfWork, logger: ILogger):
         self.uow = uow
         self.handlers: Dict[str, Callable[[dict], Awaitable[None]]] = {}
@@ -21,27 +22,17 @@ class EventDispatcher:
 
         return wrapper
 
-    async def dispatch(self, action, message: dict):
-        handler = self.handlers[action]
+    async def dispatch(self, uow: IUnitOfWork, action, message: dict):
+        try:
+            handler = self.handlers[action]
+        except KeyError:
+            logger.error(f'Handler for action {action} didnt registered', exc_info=False)
+            os.kill(os.getpid(), signal.SIGINT)
         kwargs = await resolve_dependencies(
             handler,
-            provided_kwargs={'message': message},
+            provided_kwargs={'uow': uow, 'message': message},
         )
-        async with self.uow:
-            is_message_processed = await self.uow.processed_messages.find_one(
-                ProcessedMessagesModel.id, message['message_id']
-            )
-            if is_message_processed:
-                return
-        try:
-            await handler(**kwargs)
-            async with self.uow:
-                await self.uow.processed_messages.add(
-                    ProcessedMessagesModel(id=message['message_id'])
-                )
-                await self.uow.commit()
-        except Exception:
-            self.logger.error(f'Error while dispatching action {action}, message {message}')
+        await handler(**kwargs)
 
 
-dispatcher = EventDispatcher(get_uow(), logger)
+dispatcher = BrokerDispatcher(get_uow(), logger)
