@@ -7,11 +7,10 @@ from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class StocksServiceProxy(IStocksServiceProxy):
-    def __init__(self, uow: IUnitOfWork, settings: Settings):
-        self.uow = uow
+    def __init__(self, settings: Settings):
         self.topic = settings.STOCKS_COMMANDS_TOPIC
 
-    async def reserve_products(self, command: ReserveProductsCommand):
+    async def reserve_products(self, uow: IUnitOfWork, command: ReserveProductsCommand):
         for_outbox = OutboxModel(
             action=CommandTypes.RESERVE_PRODUCTS,
             topic=self.topic,
@@ -19,4 +18,4 @@ class StocksServiceProxy(IStocksServiceProxy):
             producer='order-service',
             payload={'products': [product.to_dict() for product in command.products]},
         )
-        await self.uow.outbox.add(for_outbox)
+        await uow.outbox.add(for_outbox)
