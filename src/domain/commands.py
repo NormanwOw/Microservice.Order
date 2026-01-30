@@ -1,17 +1,18 @@
 import uuid
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
 from pydantic import Field
 
 from src.domain.base import PydanticBase
 from src.domain.entities import Product
-from src.domain.enums import AggregateTypes, CommandTypes
+from src.domain.enums import AggregateType, CommandTypes, Currency
 
 
 class ExternalReference(PydanticBase):
     id: UUID
-    type: AggregateTypes
+    type: AggregateType
     version: int
 
 
@@ -38,3 +39,14 @@ class SendNotifyCommand(Command):
 class ReserveProductsCommand(Command):
     command_type: CommandTypes = CommandTypes.RESERVE_PRODUCTS
     products: list[Product]
+
+
+class ChargePaymentPayload(PydanticBase):
+    amount: Decimal
+    currency: Currency
+    user_id: UUID
+
+
+class ChargePaymentCommand(Command):
+    command_type: CommandTypes = CommandTypes.CHARGE_PAYMENT
+    payload: ChargePaymentPayload
