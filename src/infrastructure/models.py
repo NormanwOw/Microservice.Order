@@ -39,6 +39,8 @@ class OrderModel(Base, CUModel):
     version: Mapped[int] = mapped_column(nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
+    saga: Mapped['CreateOrderSagaModel'] = relationship(back_populates='order', lazy='selectin')
+
     @classmethod
     def from_domain(cls, order: Order, status: OrderEventTypes) -> 'OrderModel':
         return cls(id=order.id, status=status, version=order.version)
@@ -69,7 +71,7 @@ class CreateOrderSagaStepModel(Base, CUModel):
         nullable=False,
         index=True,
     )
-    event_type: Mapped[str] = mapped_column(Enum(OrderEventTypes))
+    event_type: Mapped[OrderEventTypes] = mapped_column(Enum(OrderEventTypes))
     status: Mapped[str] = mapped_column(Enum(CreateOrderStepStatus), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
@@ -87,6 +89,8 @@ class CreateOrderSagaModel(Base, CUModel):
     steps: Mapped[List['CreateOrderSagaStepModel']] = relationship(
         back_populates='saga', lazy='selectin'
     )
+
+    order: Mapped[OrderModel] = relationship(back_populates='saga', lazy='selectin')
 
 
 class OrderEventModel(Base, CUModel):
