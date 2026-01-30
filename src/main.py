@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
@@ -6,7 +7,11 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from src.config import settings
 from src.infrastructure.logger.impl import logger
+from src.infrastructure.messaging.consumer import KafkaConsumer
+from src.infrastructure.messaging.kafka_router import KafkaMessageRouter
+from src.infrastructure.uow.impl import get_uow
 from src.presentation.exception_mapper import exceptions_mapper
 from src.presentation.routers.order_router import router as order_router
 
@@ -14,6 +19,7 @@ from src.presentation.routers.order_router import router as order_router
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info('Start app...')
+    asyncio.create_task(KafkaMessageRouter(get_uow(), KafkaConsumer(settings), logger).run())
     yield
     logger.info('App shutdown')
 

@@ -6,10 +6,9 @@ from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class NotificationServiceProxy(INotificationService):
-    def __init__(self, uow: IUnitOfWork, settings: Settings):
-        self.uow = uow
+    def __init__(self, settings: Settings):
         self.topic = settings.NOTIFICATION_COMMANDS_TOPIC
 
-    async def notify(self, command: SendNotifyCommand):
+    async def notify(self, uow: IUnitOfWork, command: SendNotifyCommand):
         for_outbox = OutboxModel()
-        await self.uow.outbox.add(for_outbox)
+        await uow.outbox.add(for_outbox)
