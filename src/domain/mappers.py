@@ -7,8 +7,8 @@ from src.domain.events import (
 )
 
 event_type_mapper = {
-    OrderEventTypes.ORDER_CREATED: OrderCreated.__name__,
-    OrderEventTypes.ORDER_PAYED: OrderPayed.__name__,
-    OrderEventTypes.FAILED_CREATE_ORDER: FailedCreateOrder.__name__,
-    EventTypes.PRODUCTS_RESERVED: ProductsReserved.__name__,
+    OrderEventTypes.ORDER_CREATED: OrderCreated,
+    OrderEventTypes.ORDER_PAYED: OrderPayed,
+    OrderEventTypes.FAILED_CREATE_ORDER: FailedCreateOrder,
+    EventTypes.PRODUCTS_RESERVED: ProductsReserved,
 }

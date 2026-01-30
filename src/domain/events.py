@@ -28,7 +28,7 @@ class OrderPayed(OrderEvent):
 
 
 class ProductsReserved(OrderEvent):
-    pass
+    payload: dict
 
 
 class FailedCreateOrder(OrderEvent):
