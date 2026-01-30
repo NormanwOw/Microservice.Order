@@ -19,7 +19,7 @@ class KafkaMessageRouter:
         try:
             while True:
                 async for msg in self.consumer:
-                    message_schema = EventMessage(**msg.value)
+                    message_schema = EventMessage(**msg.value, event_type=msg['action'])
 
                     async with self.uow:
                         try:
@@ -31,7 +31,7 @@ class KafkaMessageRouter:
                             continue
 
                         await dispatcher.dispatch(
-                            event_type=message_schema.event_type,
+                            action=message_schema.event_type,
                             message=msg.value,
                         )
 

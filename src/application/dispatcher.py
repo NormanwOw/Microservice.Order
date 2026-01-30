@@ -14,15 +14,15 @@ class EventDispatcher:
         self.handlers: Dict[str, Callable[[dict], Awaitable[None]]] = {}
         self.logger = logger
 
-    def register(self, event_type: str):
+    def register(self, action: str):
         def wrapper(func):
-            self.handlers[event_type] = func
+            self.handlers[action] = func
             return func
 
         return wrapper
 
-    async def dispatch(self, event_type, message: dict):
-        handler = self.handlers[event_type]
+    async def dispatch(self, action, message: dict):
+        handler = self.handlers[action]
         kwargs = await resolve_dependencies(
             handler,
             provided_kwargs={'message': message},
@@ -41,7 +41,7 @@ class EventDispatcher:
                 )
                 await self.uow.commit()
         except Exception:
-            self.logger.error(f'Error while dispatching event {event_type}, message {message}')
+            self.logger.error(f'Error while dispatching action {action}, message {message}')
 
 
 dispatcher = EventDispatcher(get_uow(), logger)
