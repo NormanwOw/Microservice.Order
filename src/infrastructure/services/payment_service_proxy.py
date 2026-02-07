@@ -7,7 +7,7 @@ from src.infrastructure.uow.interfaces import IUnitOfWork
 
 class PaymentServiceProxy(IPaymentService):
     def __init__(self, settings: Settings):
-        self.topic = settings.PAYMENT_EVENTS_TOPIC
+        self.topic = settings.PAYMENT_COMMANDS_TOPIC
 
     async def charge_payment(self, uow: IUnitOfWork, command: ChargePaymentCommand):
         for_outbox = OutboxModel(
