@@ -13,7 +13,6 @@ class Settings(BaseSettings):
     KAFKA_HOSTS: list[str]
 
     SAGA_EVENTS_TOPIC: str
-    ORDER_EVENTS_TOPIC: str
     PAYMENT_EVENTS_TOPIC: str
     STOCKS_EVENTS_TOPIC: str
     NOTIFICATION_EVENTS_TOPIC: str

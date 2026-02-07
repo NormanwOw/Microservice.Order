@@ -3,12 +3,12 @@ from src.domain.events import (
     FailedCreateOrder,
     OrderCreated,
     OrderPayed,
-    PaymentCharged,
+    ProductsReserved,
 )
 
 event_type_mapper = {
-    OrderEventTypes.ORDER_CREATED: OrderCreated.__name__,
-    OrderEventTypes.ORDER_PAYED: OrderPayed.__name__,
-    OrderEventTypes.FAILED_CREATE_ORDER: FailedCreateOrder.__name__,
-    EventTypes.PAYMENT_CHARGED: PaymentCharged.__name__,
+    OrderEventTypes.ORDER_CREATED: OrderCreated,
+    OrderEventTypes.ORDER_PAYED: OrderPayed,
+    OrderEventTypes.FAILED_CREATE_ORDER: FailedCreateOrder,
+    EventTypes.PRODUCTS_RESERVED: ProductsReserved,
 }

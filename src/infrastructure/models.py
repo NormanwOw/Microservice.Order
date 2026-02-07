@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy import UUID, DateTime, Enum, ForeignKey
@@ -23,8 +23,12 @@ class Base(DeclarativeBase):
 
 
 class CUModel:
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True, onupdate=datetime.now)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True, onupdate=lambda: datetime.now(timezone.utc)
+    )
 
 
 class OrderModel(Base, CUModel):
@@ -34,6 +38,8 @@ class OrderModel(Base, CUModel):
     status: Mapped[str] = mapped_column(Enum(OrderEventTypes), nullable=False, index=True)
     version: Mapped[int] = mapped_column(nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+
+    saga: Mapped['CreateOrderSagaModel'] = relationship(back_populates='order', lazy='selectin')
 
     @classmethod
     def from_domain(cls, order: Order, status: OrderEventTypes) -> 'OrderModel':
@@ -47,7 +53,10 @@ class OutboxModel(Base, CUModel):
     topic: Mapped[str] = mapped_column(nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
     external_reference: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    published_at: Mapped[Optional[datetime]] = mapped_column(default=None, nullable=True)
+    producer: Mapped[str] = mapped_column(nullable=False)
+    published_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), default=None, nullable=True
+    )
 
 
 class ProcessedMessagesModel(Base, CUModel):
@@ -62,7 +71,7 @@ class CreateOrderSagaStepModel(Base, CUModel):
         nullable=False,
         index=True,
     )
-    event_type: Mapped[str] = mapped_column(Enum(OrderEventTypes))
+    event_type: Mapped[OrderEventTypes] = mapped_column(Enum(OrderEventTypes))
     status: Mapped[str] = mapped_column(Enum(CreateOrderStepStatus), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
 
@@ -80,6 +89,8 @@ class CreateOrderSagaModel(Base, CUModel):
     steps: Mapped[List['CreateOrderSagaStepModel']] = relationship(
         back_populates='saga', lazy='selectin'
     )
+
+    order: Mapped[OrderModel] = relationship(back_populates='saga', lazy='selectin')
 
 
 class OrderEventModel(Base, CUModel):

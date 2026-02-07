@@ -4,15 +4,18 @@ from enum import Enum
 class OrderEventTypes(str, Enum):
     ORDER_CREATED = 'OrderCreated'
     ORDER_INITIALIZED = 'OrderInitialized'
+    CHARGED_PAYMENT = 'ChargedPayment'
+    PRODUCTS_RESERVED = 'ProductsReserved'
     ORDER_PAYED = 'OrderPayed'
     FAILED_CREATE_ORDER = 'FailedCreateOrder'
 
 
 class EventTypes(str, Enum):
-    PAYMENT_CHARGED = 'PaymentCharged'
+    PRODUCTS_RESERVED = 'ProductsReserved'
 
 
 class CommandTypes(str, Enum):
+    CHARGE_PAYMENT = 'ChargePayment'
     SEND_NOTIFY = 'SendNotify'
     RESERVE_PRODUCTS = 'ReserveProducts'
     CREATE_ORDER = 'CreateOrder'
@@ -38,7 +41,7 @@ class CreateOrderSagaStatus(str, Enum):
     FAILED = 'FAILED'
 
 
-class AggregateTypes(str, Enum):
+class AggregateType(str, Enum):
     ORDER = 'order'
 
 

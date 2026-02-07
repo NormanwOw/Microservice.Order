@@ -10,12 +10,8 @@ from src.infrastructure.uow.impl import get_uow
 class OrderDependencies:
     @classmethod
     async def create_order(cls):
-        uow = get_uow()
-        return CreateOrder(uow, StocksServiceProxy(uow, settings), settings)
+        return CreateOrder(get_uow(), StocksServiceProxy(settings), settings)
 
     @classmethod
     async def create_order_saga(cls) -> CreateOrderSaga:
-        uow = get_uow()
-        return CreateOrderSaga(
-            uow, PaymentServiceProxy(uow, settings), NotificationServiceProxy(uow, settings)
-        )
+        return CreateOrderSaga(PaymentServiceProxy(settings), NotificationServiceProxy(settings))

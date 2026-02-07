@@ -42,7 +42,7 @@ class CreateOrder:
                 products=command.products,
                 external_reference=ExternalReference(**order.model_dump()),
             )
-            await self.stocks_service.reserve_products(command)
+            await self.stocks_service.reserve_products(self.uow, command)
             await self.uow.commit()
 
             return CreateOrderResponse(order_id=order.id)
