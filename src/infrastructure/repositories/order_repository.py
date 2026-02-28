@@ -53,7 +53,7 @@ class OrderRepository(SQLAlchemyRepository, IOrderRepository):
                     order_id=order_id,
                     version=expected_version + i,
                     event_type=event.__class__.__name__,
-                    payload=event.to_dict(),
+                    payload=event.to_dict()['payload'],
                 )
             )
 
@@ -63,7 +63,7 @@ class OrderRepository(SQLAlchemyRepository, IOrderRepository):
             status=order.status,
             version=order.version,
             customer_id=customer_id,
-            payload=[product.to_dict() for product in order.products],
+            payload={'products': [product.to_dict() for product in order.products]},
         )
 
         stmt = stmt.on_conflict_do_update(
