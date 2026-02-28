@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: 2415ac80e1e5
+Revision ID: 48eea09f1904
 Revises:
-Create Date: 2026-01-03 19:12:30.999098
+Create Date: 2026-02-28 13:58:19.729334
 
 """
 
@@ -13,7 +13,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '2415ac80e1e5'
+revision: str = '48eea09f1904'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -31,7 +31,10 @@ def upgrade() -> None:
             sa.Enum(
                 'ORDER_CREATED',
                 'ORDER_INITIALIZED',
-                'ORDER_PAYED',
+                'PRODUCTS_RESERVED',
+                'PRODUCTS_COMMITTED',
+                'PAYMENT_CHARGED',
+                'NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED',
                 'FAILED_CREATE_ORDER',
                 name='ordereventtypes',
             ),
@@ -52,7 +55,10 @@ def upgrade() -> None:
             sa.Enum(
                 'ORDER_CREATED',
                 'ORDER_INITIALIZED',
-                'ORDER_PAYED',
+                'PRODUCTS_RESERVED',
+                'PRODUCTS_COMMITTED',
+                'PAYMENT_CHARGED',
+                'NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED',
                 'FAILED_CREATE_ORDER',
                 name='ordereventtypes',
             ),
@@ -97,6 +103,8 @@ def upgrade() -> None:
                 'STARTED',
                 'WAITING_PAYMENT',
                 'PAYMENT_COMPLETED',
+                'WAITING_PRODUCTS_COMMITTED',
+                'WAITING_NOTIFY_ORDER_COMPLETED',
                 'COMPLETED',
                 'FAILED',
                 name='createordersagastatus',
@@ -125,7 +133,10 @@ def upgrade() -> None:
             sa.Enum(
                 'ORDER_CREATED',
                 'ORDER_INITIALIZED',
-                'ORDER_PAYED',
+                'PRODUCTS_RESERVED',
+                'PRODUCTS_COMMITTED',
+                'PAYMENT_CHARGED',
+                'NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED',
                 'FAILED_CREATE_ORDER',
                 name='ordereventtypes',
             ),
