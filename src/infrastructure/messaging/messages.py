@@ -15,7 +15,7 @@ class Message(PydanticBase):
 
 
 class EventMessage(Message):
-    event_type: EventTypes
+    action: EventTypes
     external_reference: ExternalReference
 
 
@@ -27,9 +27,22 @@ class OrderMessage(EventMessage):
 
 class ProductsPayload(PydanticBase):
     products: list[Product]
+
+
+class ProductsReservedPayload(ProductsPayload):
     total_price: Decimal
 
 
 class ProductsReservedMessage(EventMessage):
-    event_type: EventTypes = EventTypes.PRODUCTS_RESERVED
+    action: EventTypes = EventTypes.PRODUCTS_RESERVED
+    payload: ProductsReservedPayload
+
+
+class PaymentChargedMessage(EventMessage):
+    action: EventTypes = EventTypes.PAYMENT_CHARGED
+    payload: dict
+
+
+class ProductsCommittedMessage(EventMessage):
+    action: EventTypes = EventTypes.PRODUCTS_COMMITTED
     payload: ProductsPayload

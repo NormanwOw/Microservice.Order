@@ -13,6 +13,7 @@ from src.infrastructure.messaging.consumer import KafkaConsumer
 from src.infrastructure.messaging.kafka_router import KafkaMessageRouter
 from src.infrastructure.uow.impl import get_uow
 from src.presentation.exception_mapper import exceptions_mapper
+from src.presentation.routers.app_router import router as app_router
 from src.presentation.routers.order_router import router as order_router
 
 
@@ -45,4 +46,5 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 app.add_middleware(LoggingMiddleware)
 
+app.include_router(app_router)
 app.include_router(order_router)

@@ -103,4 +103,4 @@ class OrderEventModel(Base, CUModel):
 
     def to_domain(self) -> DomainEvent:
         event = event_type_mapper[self.event_type]
-        return event(**self.payload)
+        return event(**self.payload, payload=self.payload)

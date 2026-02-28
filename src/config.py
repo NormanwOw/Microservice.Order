@@ -2,7 +2,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='deploy/.env', env_file_encoding='utf-8')
+    model_config = SettingsConfigDict(env_file='orders-deploy/.env', env_file_encoding='utf-8')
+
+    DEBUG: bool
 
     DB_HOST: str
     DB_PORT: str
@@ -19,6 +21,8 @@ class Settings(BaseSettings):
     STOCKS_COMMANDS_TOPIC: str
     PAYMENT_COMMANDS_TOPIC: str
     NOTIFICATION_COMMANDS_TOPIC: str
+
+    SERVICE_NAME: str
 
 
 settings = Settings()

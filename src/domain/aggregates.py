@@ -11,7 +11,8 @@ from src.domain.events import (
     DomainEvent,
     FailedCreateOrder,
     OrderCreated,
-    OrderPayed,
+    PaymentCharged,
+    ProductsCommitted,
     ProductsReserved,
 )
 from src.domain.exceptions import EventNotSupported, OrderAlreadyExists
@@ -37,7 +38,7 @@ class Order(Aggregate):
         if self.id is not None:
             raise OrderAlreadyExists
 
-        return [OrderCreated(**command.model_dump())]
+        return [OrderCreated(**command.model_dump(), payload=command.to_dict())]
 
     def apply(self, event):
         if event.__class__.__name__ not in [
@@ -53,8 +54,11 @@ class Order(Aggregate):
         elif isinstance(event, ProductsReserved):
             self.status = OrderEventTypes.PRODUCTS_RESERVED
 
-        elif isinstance(event, OrderPayed):
-            self.status = OrderEventTypes.ORDER_PAYED
+        elif isinstance(event, PaymentCharged):
+            self.status = OrderEventTypes.PAYMENT_CHARGED
+
+        elif isinstance(event, ProductsCommitted):
+            self.status = OrderEventTypes.PRODUCTS_COMMITTED
 
         elif isinstance(event, FailedCreateOrder):
             self.status = OrderEventTypes.FAILED_CREATE_ORDER
