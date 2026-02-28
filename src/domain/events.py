@@ -6,6 +6,7 @@ from pydantic import Field
 
 from src.domain.base import PydanticBase
 from src.domain.entities import Product
+from src.infrastructure.messaging.messages import ProductsPayload
 
 
 class DomainEvent(PydanticBase):
@@ -14,6 +15,7 @@ class DomainEvent(PydanticBase):
 
 class OrderEvent(DomainEvent):
     order_id: UUID | None = None
+    payload: dict
 
 
 class OrderCreated(OrderEvent):
@@ -23,12 +25,16 @@ class OrderCreated(OrderEvent):
     customer_id: UUID
 
 
-class OrderPayed(OrderEvent):
-    pass
+class PaymentCharged(OrderEvent):
+    payload: dict | None = None
 
 
 class ProductsReserved(OrderEvent):
-    payload: dict
+    pass
+
+
+class ProductsCommitted(OrderEvent):
+    payload: ProductsPayload
 
 
 class FailedCreateOrder(OrderEvent):

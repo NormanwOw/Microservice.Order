@@ -4,20 +4,24 @@ from enum import Enum
 class OrderEventTypes(str, Enum):
     ORDER_CREATED = 'OrderCreated'
     ORDER_INITIALIZED = 'OrderInitialized'
-    CHARGED_PAYMENT = 'ChargedPayment'
     PRODUCTS_RESERVED = 'ProductsReserved'
-    ORDER_PAYED = 'OrderPayed'
+    PRODUCTS_COMMITTED = 'ProductsCommitted'
+    PAYMENT_CHARGED = 'PaymentCharged'
+    NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED = 'NotifiedCustomerSuccessOrderCreated'
     FAILED_CREATE_ORDER = 'FailedCreateOrder'
 
 
 class EventTypes(str, Enum):
     PRODUCTS_RESERVED = 'ProductsReserved'
+    PRODUCTS_COMMITTED = 'ProductsCommitted'
+    PAYMENT_CHARGED = 'PaymentCharged'
 
 
 class CommandTypes(str, Enum):
     CHARGE_PAYMENT = 'ChargePayment'
-    SEND_NOTIFY = 'SendNotify'
+    SEND_SUCCESS_CREATED_ORDER_NOTIFY = 'SendSuccessCreatedOrderNotify'
     RESERVE_PRODUCTS = 'ReserveProducts'
+    COMMIT_PRODUCTS = 'CommitProducts'
     CREATE_ORDER = 'CreateOrder'
 
 
@@ -37,6 +41,8 @@ class CreateOrderSagaStatus(str, Enum):
     STARTED = 'STARTED'
     WAITING_PAYMENT = 'WAITING_PAYMENT'
     PAYMENT_COMPLETED = 'PAYMENT_COMPLETED'
+    WAITING_PRODUCTS_COMMITTED = 'WAITING_PRODUCTS_COMMITTED'
+    WAITING_NOTIFY_ORDER_COMPLETED = 'WAITING_NOTIFY_ORDER_COMPLETED'
     COMPLETED = 'COMPLETED'
     FAILED = 'FAILED'
 

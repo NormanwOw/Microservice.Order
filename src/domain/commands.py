@@ -30,14 +30,13 @@ class CreateOrderCommand(Command):
     customer_id: UUID
 
 
-class SendNotifyCommand(Command):
-    command_type: CommandTypes = CommandTypes.SEND_NOTIFY
-    customer_id: UUID
-    message: str
-
-
 class ReserveProductsCommand(Command):
     command_type: CommandTypes = CommandTypes.RESERVE_PRODUCTS
+    products: list[Product]
+
+
+class CommitProductsCommand(Command):
+    command_type: CommandTypes = CommandTypes.COMMIT_PRODUCTS
     products: list[Product]
 
 
@@ -50,3 +49,13 @@ class ChargePaymentPayload(PydanticBase):
 class ChargePaymentCommand(Command):
     command_type: CommandTypes = CommandTypes.CHARGE_PAYMENT
     payload: ChargePaymentPayload
+
+
+class SuccessCreatedOrderNotifyPayload(PydanticBase):
+    user_id: UUID
+    products: list[Product]
+
+
+class SendSuccessCreatedOrderNotifyCommand(Command):
+    command_type: CommandTypes = CommandTypes.SEND_SUCCESS_CREATED_ORDER_NOTIFY
+    payload: SuccessCreatedOrderNotifyPayload
