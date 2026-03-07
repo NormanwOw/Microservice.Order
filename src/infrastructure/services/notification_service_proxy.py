@@ -8,7 +8,7 @@ from src.infrastructure.models import OutboxModel
 class NotificationServiceProxy(INotificationService):
     def __init__(self, settings: Settings):
         self.topic = settings.NOTIFICATION_COMMANDS_TOPIC
-        self.producer = 'order-service'
+        self.settings = settings
 
     async def notify_success_created_order(
         self, uow: IUnitOfWork, command: SendSuccessCreatedOrderNotifyCommand
@@ -18,6 +18,6 @@ class NotificationServiceProxy(INotificationService):
             topic=self.topic,
             payload=command.payload.to_dict(),
             external_reference=command.external_reference.to_dict(),
-            producer=self.producer,
+            producer=self.settings.SERVICE_NAME,
         )
         await uow.outbox.add(for_outbox)
