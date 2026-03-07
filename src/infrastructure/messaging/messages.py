@@ -46,3 +46,11 @@ class PaymentChargedMessage(EventMessage):
 class ProductsCommittedMessage(EventMessage):
     action: EventTypes = EventTypes.PRODUCTS_COMMITTED
     payload: ProductsPayload
+
+
+class FailedEventPayload(PydanticBase):
+    error_message: str
+
+
+class FailedEventMessage(EventMessage):
+    payload: FailedEventPayload

@@ -16,6 +16,10 @@ class EventTypes(str, Enum):
     PRODUCTS_COMMITTED = 'ProductsCommitted'
     PAYMENT_CHARGED = 'PaymentCharged'
 
+    CHARGE_PAYMENT_FAILED = 'ChargePaymentFailed'
+    COMMIT_FAILED = 'CommitFailed'
+    RESERVE_FAILED = 'ReserveFailed'
+
 
 class CommandTypes(str, Enum):
     CHARGE_PAYMENT = 'ChargePayment'
@@ -54,3 +58,10 @@ class AggregateType(str, Enum):
 class MessageType(str, Enum):
     EVENT = 'event'
     COMMAND = 'command'
+
+
+class Services(str, Enum):
+    ORDER = 'order-service'
+    PAYMENT = 'payment-service'
+    STOCKS = 'stocks-service'
+    NOTIFICATION = 'notification-service'
