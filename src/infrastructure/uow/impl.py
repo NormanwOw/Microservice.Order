@@ -1,16 +1,17 @@
-from src.infrastructure.repositories.create_order_saga_repository import (
-    CreateOrderSagaRepository,
-)
-from src.infrastructure.repositories.create_order_saga_step_repository import (
-    CreateOrderSagaStepRepository,
-)
-from src.infrastructure.repositories.interfaces import (
+from src.application.ports.repositories import (
     ICreateOrderSagaRepository,
     ICreateOrderSagaStepRepository,
     IOrderEventRepository,
     IOrderRepository,
     IOutboxRepository,
     IProcessedMessagesModelRepository,
+)
+from src.application.ports.uow import IUnitOfWork
+from src.infrastructure.repositories.create_order_saga_repository import (
+    CreateOrderSagaRepository,
+)
+from src.infrastructure.repositories.create_order_saga_step_repository import (
+    CreateOrderSagaStepRepository,
 )
 from src.infrastructure.repositories.order_event_repository import OrderEventRepository
 from src.infrastructure.repositories.order_repository import OrderRepository
@@ -19,7 +20,6 @@ from src.infrastructure.repositories.processed_message_repository import (
     ProcessedMessagesModelRepository,
 )
 from src.infrastructure.session import async_session
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class UnitOfWork(IUnitOfWork):

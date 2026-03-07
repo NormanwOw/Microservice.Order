@@ -4,12 +4,12 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.ports.repositories import IOrderRepository
 from src.domain.aggregates import Order
 from src.domain.events import DomainEvent
 from src.domain.exceptions import ConcurrencyException
 from src.infrastructure.models import OrderEventModel, OrderModel
 from src.infrastructure.repositories.base_repository import SQLAlchemyRepository
-from src.infrastructure.repositories.interfaces import IOrderRepository
 
 
 class OrderRepository(SQLAlchemyRepository, IOrderRepository):

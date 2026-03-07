@@ -2,11 +2,11 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.ports.repositories import ICreateOrderSagaRepository
 from src.domain.aggregates import Order
 from src.domain.enums import CreateOrderSagaStatus, CreateOrderStepStatus, OrderEventTypes
 from src.infrastructure.models import CreateOrderSagaModel, CreateOrderSagaStepModel
 from src.infrastructure.repositories.base_repository import SQLAlchemyRepository
-from src.infrastructure.repositories.interfaces import ICreateOrderSagaRepository
 
 
 class CreateOrderSagaRepository(SQLAlchemyRepository, ICreateOrderSagaRepository):

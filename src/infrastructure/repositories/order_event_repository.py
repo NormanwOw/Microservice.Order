@@ -1,8 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.ports.repositories import IOrderEventRepository
 from src.infrastructure.models import OrderEventModel
 from src.infrastructure.repositories.base_repository import SQLAlchemyRepository
-from src.infrastructure.repositories.interfaces import IOrderEventRepository
 
 
 class OrderEventRepository(SQLAlchemyRepository, IOrderEventRepository):

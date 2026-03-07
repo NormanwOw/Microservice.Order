@@ -1,20 +1,20 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
-from src.infrastructure.logger.interfaces import ILogger
+from src.application.ports.logger import ILogger
 
 
 class Logger(ILogger):
     def __init__(self):
         self.__logger = logging.getLogger()
         self.__logger.setLevel(logging.INFO)
-        self.__uvicorn_logger = logging.getLogger("uvicorn")
+        self.__uvicorn_logger = logging.getLogger('uvicorn')
         self.__uvicorn_logger.setLevel(logging.INFO)
 
         if not self.__logger.handlers:
-            formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+            formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
             file_handler = RotatingFileHandler(
-                filename="logs/logs.log", mode="a", maxBytes=1_048_576, backupCount=3
+                filename='logs/logs.log', mode='a', maxBytes=1_048_576, backupCount=3
             )
             file_handler.setFormatter(formatter)
             self.__logger.addHandler(file_handler)

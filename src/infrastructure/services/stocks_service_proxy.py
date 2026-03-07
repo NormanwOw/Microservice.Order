@@ -1,8 +1,8 @@
+from src.application.ports.services import IStocksServiceProxy
+from src.application.ports.uow import IUnitOfWork
 from src.config import Settings
 from src.domain.commands import CommitProductsCommand, ReserveProductsCommand
 from src.infrastructure.models import OutboxModel
-from src.infrastructure.services.interfaces import IStocksServiceProxy
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class StocksServiceProxy(IStocksServiceProxy):

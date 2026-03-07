@@ -3,10 +3,10 @@ import signal
 from typing import Awaitable, Callable, Dict
 
 from src.application.disp_depends import resolve_dependencies
+from src.application.ports.logger import ILogger
+from src.application.ports.uow import IUnitOfWork
 from src.infrastructure.logger.impl import logger
-from src.infrastructure.logger.interfaces import ILogger
 from src.infrastructure.uow.impl import get_uow
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class BrokerDispatcher:

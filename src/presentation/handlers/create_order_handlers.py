@@ -1,5 +1,6 @@
 from src.application.disp_depends import DispDepends
 from src.application.dispatcher import dispatcher
+from src.application.ports.uow import IUnitOfWork
 from src.application.sagas.create_order_saga import CreateOrderSaga
 from src.domain.enums import EventTypes
 from src.infrastructure.logger.impl import logger
@@ -8,7 +9,6 @@ from src.infrastructure.messaging.messages import (
     ProductsCommittedMessage,
     ProductsReservedMessage,
 )
-from src.infrastructure.uow.interfaces import IUnitOfWork
 from src.presentation.dependencies.order_dependencies import OrderDependencies
 
 

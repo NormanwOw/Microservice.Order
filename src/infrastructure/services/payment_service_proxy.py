@@ -1,8 +1,8 @@
+from src.application.ports.services import IPaymentService
+from src.application.ports.uow import IUnitOfWork
 from src.config import Settings
 from src.domain.commands import ChargePaymentCommand
 from src.infrastructure.models import OutboxModel
-from src.infrastructure.services.interfaces import IPaymentService
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class PaymentServiceProxy(IPaymentService):

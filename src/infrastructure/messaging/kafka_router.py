@@ -4,12 +4,12 @@ from sqlalchemy.exc import IntegrityError
 from tenacity import AsyncRetrying, RetryError, stop_after_attempt, wait_fixed
 
 from src.application.dispatcher import dispatcher
+from src.application.ports.broker import IKafkaConsumer
+from src.application.ports.logger import ILogger
+from src.application.ports.uow import IUnitOfWork
 from src.config import settings
-from src.infrastructure.logger.interfaces import ILogger
-from src.infrastructure.messaging.interfaces import IKafkaConsumer
 from src.infrastructure.messaging.messages import EventMessage
 from src.infrastructure.models import ProcessedMessagesModel
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class KafkaMessageRouter:

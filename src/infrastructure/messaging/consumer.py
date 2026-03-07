@@ -2,8 +2,8 @@ import json
 
 from aiokafka import AIOKafkaConsumer
 
+from src.application.ports.broker import IKafkaConsumer
 from src.config import Settings
-from src.infrastructure.messaging.interfaces import IKafkaConsumer
 
 
 class KafkaConsumer(IKafkaConsumer, AIOKafkaConsumer):

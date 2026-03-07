@@ -1,5 +1,11 @@
 from uuid import UUID
 
+from src.application.ports.services import (
+    INotificationService,
+    IPaymentService,
+    IStocksServiceProxy,
+)
+from src.application.ports.uow import IUnitOfWork
 from src.domain.aggregates import Order
 from src.domain.commands import (
     ChargePaymentCommand,
@@ -27,12 +33,6 @@ from src.infrastructure.models import (
     CreateOrderSagaStepModel,
     OrderModel,
 )
-from src.infrastructure.services.interfaces import (
-    INotificationService,
-    IPaymentService,
-    IStocksServiceProxy,
-)
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class CreateOrderSaga:

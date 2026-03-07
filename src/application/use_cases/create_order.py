@@ -1,9 +1,9 @@
+from src.application.ports.services import IStocksServiceProxy
+from src.application.ports.uow import IUnitOfWork
 from src.config import Settings
 from src.domain.aggregates import Order
 from src.domain.commands import CreateOrderCommand, ExternalReference, ReserveProductsCommand
 from src.domain.exceptions import OrderAlreadyExists
-from src.infrastructure.services.interfaces import IStocksServiceProxy
-from src.infrastructure.uow.interfaces import IUnitOfWork
 from src.presentation.schemas import CreateOrderResponse
 
 

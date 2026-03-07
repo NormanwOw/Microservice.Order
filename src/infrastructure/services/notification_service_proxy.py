@@ -1,8 +1,8 @@
+from src.application.ports.services import INotificationService
+from src.application.ports.uow import IUnitOfWork
 from src.config import Settings
 from src.domain.commands import SendSuccessCreatedOrderNotifyCommand
 from src.infrastructure.models import OutboxModel
-from src.infrastructure.services.interfaces import INotificationService
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class NotificationServiceProxy(INotificationService):

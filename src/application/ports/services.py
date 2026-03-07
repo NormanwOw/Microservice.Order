@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
 
+from src.application.ports.uow import IUnitOfWork
 from src.domain.commands import (
     ChargePaymentCommand,
     CommitProductsCommand,
     ReserveProductsCommand,
     SendSuccessCreatedOrderNotifyCommand,
 )
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class IPaymentService(ABC):
