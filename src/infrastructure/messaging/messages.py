@@ -6,7 +6,7 @@ from pydantic import Field
 from src.domain.base import PydanticBase
 from src.domain.commands import ExternalReference
 from src.domain.entities import Product
-from src.domain.enums import EventTypes
+from src.domain.enums import CommandTypes, OrderEventTypes
 
 
 class Message(PydanticBase):
@@ -15,7 +15,12 @@ class Message(PydanticBase):
 
 
 class EventMessage(Message):
-    action: EventTypes
+    action: OrderEventTypes
+    external_reference: ExternalReference
+
+
+class CommandMessage(Message):
+    action: CommandTypes
     external_reference: ExternalReference
 
 
@@ -34,17 +39,17 @@ class ProductsReservedPayload(ProductsPayload):
 
 
 class ProductsReservedMessage(EventMessage):
-    action: EventTypes = EventTypes.PRODUCTS_RESERVED
+    action: OrderEventTypes = OrderEventTypes.PRODUCTS_RESERVED
     payload: ProductsReservedPayload
 
 
 class PaymentChargedMessage(EventMessage):
-    action: EventTypes = EventTypes.PAYMENT_CHARGED
+    action: OrderEventTypes = OrderEventTypes.PAYMENT_CHARGED
     payload: dict
 
 
 class ProductsCommittedMessage(EventMessage):
-    action: EventTypes = EventTypes.PRODUCTS_COMMITTED
+    action: OrderEventTypes = OrderEventTypes.PRODUCTS_COMMITTED
     payload: ProductsPayload
 
 
@@ -53,4 +58,10 @@ class FailedEventPayload(PydanticBase):
 
 
 class FailedEventMessage(EventMessage):
+    action: OrderEventTypes
     payload: FailedEventPayload
+    external_reference: ExternalReference
+
+
+class CancelOrderMessage(CommandMessage):
+    payload: dict
