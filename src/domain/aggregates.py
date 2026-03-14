@@ -4,19 +4,9 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from src.domain.commands import CreateOrderCommand
 from src.domain.entities import Product
-from src.domain.enums import AggregateType, OrderEventTypes
-from src.domain.events import (
-    DomainEvent,
-    FailedCreateOrder,
-    OrderCreated,
-    PaymentCharged,
-    ProductsCommitted,
-    ProductsReserved,
-)
-from src.domain.exceptions import EventNotSupported, OrderAlreadyExists
-from src.domain.mappers import event_type_mapper
+from src.domain.enums import AggregateType, CommandTypes, OrderEventTypes
+from src.domain.events import StepCompensated, StepCompleted, StepFailed
 
 
 class Aggregate(BaseModel):
@@ -34,33 +24,25 @@ class Order(Aggregate):
     products: list[Product] | None = None
     type: AggregateType = AggregateType.ORDER
 
-    def decide(self, command: CreateOrderCommand) -> list[DomainEvent]:
-        if self.id is not None:
-            raise OrderAlreadyExists
-
-        return [OrderCreated(**command.model_dump(), payload=command.to_dict())]
-
-    def apply(self, event):
-        if event.__class__.__name__ not in [
-            mapped_event.__name__ for mapped_event in event_type_mapper.values()
-        ]:
-            raise EventNotSupported
-
-        if isinstance(event, OrderCreated):
-            self.id = event.order_id
+    def apply(self, event: StepCompleted | StepCompensated | StepFailed):
+        if event.command_type == CommandTypes.CREATE_ORDER:
+            self.id = event.command_payload['external_reference']['id']
             self.status = OrderEventTypes.ORDER_CREATED
-            self.products = event.products
+            self.products = [Product(**product) for product in event.command_payload['products']]
 
-        elif isinstance(event, ProductsReserved):
+        elif event.command_type == CommandTypes.RESERVE_PRODUCTS:
             self.status = OrderEventTypes.PRODUCTS_RESERVED
 
-        elif isinstance(event, PaymentCharged):
+        elif event.command_type == CommandTypes.CHARGE_PAYMENT:
             self.status = OrderEventTypes.PAYMENT_CHARGED
 
-        elif isinstance(event, ProductsCommitted):
+        elif event.command_type == CommandTypes.COMMIT_PRODUCTS:
             self.status = OrderEventTypes.PRODUCTS_COMMITTED
 
-        elif isinstance(event, FailedCreateOrder):
+        if isinstance(event, StepFailed):
             self.status = OrderEventTypes.FAILED_CREATE_ORDER
+
+        if isinstance(event, StepCompensated):
+            self.status = event.status
 
         self.version += 1

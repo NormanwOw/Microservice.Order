@@ -2,11 +2,11 @@ from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.ports.repositories import ICreateOrderSagaRepository
 from src.domain.aggregates import Order
 from src.domain.enums import CreateOrderSagaStatus, CreateOrderStepStatus, OrderEventTypes
 from src.infrastructure.models import CreateOrderSagaModel, CreateOrderSagaStepModel
 from src.infrastructure.repositories.base_repository import SQLAlchemyRepository
-from src.infrastructure.repositories.interfaces import ICreateOrderSagaRepository
 
 
 class CreateOrderSagaRepository(SQLAlchemyRepository, ICreateOrderSagaRepository):
@@ -14,8 +14,7 @@ class CreateOrderSagaRepository(SQLAlchemyRepository, ICreateOrderSagaRepository
         self.__session = session
         super().__init__(session, CreateOrderSagaModel)
 
-    async def start(self, order: Order, customer_id: UUID):
-        saga_id = uuid4()
+    async def start(self, saga_id: UUID, order: Order, customer_id: UUID):
         step_id = uuid4()
         payload = {
             'customer_id': str(customer_id),

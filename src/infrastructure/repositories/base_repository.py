@@ -4,10 +4,10 @@ from sqlalchemy import delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
+from src.application.ports.repositories import ISQLAlchemyRepository
 from src.infrastructure.models import Base
-from src.infrastructure.repositories.interfaces import ISQLAlchemyRepository
 
-T = TypeVar("T", bound=Base)
+T = TypeVar('T', bound=Base)
 
 
 class SQLAlchemyRepository(ISQLAlchemyRepository):
@@ -28,19 +28,13 @@ class SQLAlchemyRepository(ISQLAlchemyRepository):
     ) -> list[T]:
         if not filter_field or not filter_value:
             if order_by:
-                res = await self.session.execute(
-                    select(self.model).order_by(desc(order_by))
-                )
+                res = await self.session.execute(select(self.model).order_by(desc(order_by)))
             else:
                 res = await self.session.execute(select(self.model))
             return res.scalars().all()
 
         if order_by:
-            query = (
-                select(self.model)
-                .where(filter_field == filter_value)
-                .order_by(desc(order_by))
-            )
+            query = select(self.model).where(filter_field == filter_value).order_by(desc(order_by))
         else:
             query = select(self.model).where(filter_field == filter_value)
         res = await self.session.execute(query)
@@ -63,17 +57,13 @@ class SQLAlchemyRepository(ISQLAlchemyRepository):
         filter_value: Any = None,
     ):
         if filter_field and filter_value:
-            stmt = (
-                update(self.model).values(**values).where(filter_field == filter_value)
-            )
+            stmt = update(self.model).values(**values).where(filter_field == filter_value)
         else:
             stmt = update(self.model).values(**values)
         await self.session.execute(stmt)
 
     async def delete_one(self, filter_field: InstrumentedAttribute, filter_value: Any):
-        await self.session.execute(
-            delete(self.model).where(filter_field == filter_value)
-        )
+        await self.session.execute(delete(self.model).where(filter_field == filter_value))
 
     async def delete(self):
         await self.session.execute(delete(self.model))

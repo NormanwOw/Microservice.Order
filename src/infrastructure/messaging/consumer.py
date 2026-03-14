@@ -2,14 +2,15 @@ import json
 
 from aiokafka import AIOKafkaConsumer
 
+from src.application.ports.broker import IKafkaConsumer
 from src.config import Settings
-from src.infrastructure.messaging.interfaces import IKafkaConsumer
 
 
 class KafkaConsumer(IKafkaConsumer, AIOKafkaConsumer):
     def __init__(self, settings: Settings):
         super().__init__(
             settings.SAGA_EVENTS_TOPIC,
+            settings.ORDER_COMMANDS_TOPIC,
             bootstrap_servers=settings.KAFKA_HOSTS,
             group_id='order_group',
             enable_auto_commit=False,

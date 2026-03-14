@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.infrastructure.repositories import interfaces as i
+from src.application.ports import repositories as i
 
 
 class IUnitOfWork(ABC):

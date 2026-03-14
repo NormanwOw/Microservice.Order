@@ -14,10 +14,10 @@ router = APIRouter(prefix=f'/api/v{VERSION}/orders', tags=['Orders'])
 
 @router.post(path='', summary='Создание заказа', status_code=201)
 async def create_order_endpoint(
+    customer_id: uuid.UUID,
     order_data: CreateOrderSchema,
     create_order: CreateOrder = Depends(OrderDependencies.create_order),
 ):
     """Упрощённый вариант без авторизации"""
-    customer_id = uuid.uuid4()
     command = CreateOrderCommand(**order_data.model_dump(), customer_id=customer_id)
     return await create_order(command)

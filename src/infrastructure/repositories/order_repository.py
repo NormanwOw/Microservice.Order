@@ -4,12 +4,13 @@ from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.application.ports.repositories import IOrderRepository
 from src.domain.aggregates import Order
-from src.domain.events import DomainEvent
+from src.domain.events import Event
 from src.domain.exceptions import ConcurrencyException
+from src.domain.mappers import event_type_mapper
 from src.infrastructure.models import OrderEventModel, OrderModel
 from src.infrastructure.repositories.base_repository import SQLAlchemyRepository
-from src.infrastructure.repositories.interfaces import IOrderRepository
 
 
 class OrderRepository(SQLAlchemyRepository, IOrderRepository):
@@ -33,7 +34,7 @@ class OrderRepository(SQLAlchemyRepository, IOrderRepository):
 
         return order
 
-    async def append_events(self, order_id: UUID, expected_version: int, events: list[DomainEvent]):
+    async def append_events(self, order_id: UUID, expected_version: int, events: list[Event]):
         res = await self.__session.scalars(
             select(OrderEventModel.version)
             .filter_by(order_id=order_id)
@@ -48,14 +49,13 @@ class OrderRepository(SQLAlchemyRepository, IOrderRepository):
             raise ConcurrencyException(f'Expected {expected_version}, got {current_version}')
 
         for i, event in enumerate(events, start=1):
-            self.__session.add(
-                OrderEventModel(
-                    order_id=order_id,
-                    version=expected_version + i,
-                    event_type=event.__class__.__name__,
-                    payload=event.to_dict()['payload'],
-                )
+            new_event = OrderEventModel(
+                order_id=order_id,
+                version=expected_version + i,
+                event_type=event_type_mapper[event.__class__.__name__],
+                payload=event.to_dict(),
             )
+            self.__session.add(new_event)
 
     async def upsert_projection(self, order: Order, customer_id: UUID):
         stmt = insert(OrderModel).values(
@@ -64,13 +64,5 @@ class OrderRepository(SQLAlchemyRepository, IOrderRepository):
             version=order.version,
             customer_id=customer_id,
             payload={'products': [product.to_dict() for product in order.products]},
-        )
-
-        stmt = stmt.on_conflict_do_update(
-            index_elements=[OrderModel.id],
-            set_={
-                'status': stmt.excluded.status,
-                'version': stmt.excluded.version,
-            },
         )
         await self.__session.execute(stmt)

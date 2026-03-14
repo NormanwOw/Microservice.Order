@@ -4,12 +4,13 @@ from sqlalchemy.exc import IntegrityError
 from tenacity import AsyncRetrying, RetryError, stop_after_attempt, wait_fixed
 
 from src.application.dispatcher import dispatcher
+from src.application.ports.broker import IKafkaConsumer
+from src.application.ports.logger import ILogger
+from src.application.ports.uow import IUnitOfWork
 from src.config import settings
-from src.infrastructure.logger.interfaces import ILogger
-from src.infrastructure.messaging.interfaces import IKafkaConsumer
-from src.infrastructure.messaging.messages import EventMessage
+from src.domain.enums import OrderEventTypes
+from src.infrastructure.messaging.messages import CommandMessage, EventMessage
 from src.infrastructure.models import ProcessedMessagesModel
-from src.infrastructure.uow.interfaces import IUnitOfWork
 
 
 class KafkaMessageRouter:
@@ -23,7 +24,10 @@ class KafkaMessageRouter:
         try:
             while True:
                 async for msg in self.consumer:
-                    message_schema = EventMessage(**msg.value)
+                    if msg.value['action'] in OrderEventTypes:
+                        message_schema = EventMessage(**msg.value)
+                    else:
+                        message_schema = CommandMessage(**msg.value)
 
                     if not settings.DEBUG:
                         async with self.uow:

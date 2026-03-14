@@ -40,7 +40,7 @@ class CommitProductsCommand(Command):
     products: list[Product]
 
 
-class ChargePaymentPayload(PydanticBase):
+class PaymentPayload(PydanticBase):
     amount: Decimal
     currency: Currency
     user_id: UUID
@@ -48,7 +48,7 @@ class ChargePaymentPayload(PydanticBase):
 
 class ChargePaymentCommand(Command):
     command_type: CommandTypes = CommandTypes.CHARGE_PAYMENT
-    payload: ChargePaymentPayload
+    payload: PaymentPayload
 
 
 class SuccessCreatedOrderNotifyPayload(PydanticBase):
@@ -59,3 +59,7 @@ class SuccessCreatedOrderNotifyPayload(PydanticBase):
 class SendSuccessCreatedOrderNotifyCommand(Command):
     command_type: CommandTypes = CommandTypes.SEND_SUCCESS_CREATED_ORDER_NOTIFY
     payload: SuccessCreatedOrderNotifyPayload
+
+
+class CancelCommand(Command):
+    payload: dict

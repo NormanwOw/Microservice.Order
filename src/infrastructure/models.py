@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List, Optional, Type
 
 from sqlalchemy import UUID, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
@@ -10,10 +10,11 @@ from src.domain.aggregates import Order
 from src.domain.enums import (
     CreateOrderSagaStatus,
     CreateOrderStepStatus,
+    EventTypes,
     OrderEventTypes,
 )
-from src.domain.events import DomainEvent
-from src.domain.mappers import event_type_mapper
+from src.domain.events import Event, StepCompleted
+from src.domain.mappers import order_event_type_mapper
 
 
 class Base(DeclarativeBase):
@@ -98,9 +99,9 @@ class OrderEventModel(Base, CUModel):
 
     order_id: Mapped[uuid.UUID] = mapped_column(UUID, index=True)
     version: Mapped[int] = mapped_column()
-    event_type: Mapped[str] = mapped_column(Enum(OrderEventTypes))
+    event_type: Mapped[str] = mapped_column(Enum(EventTypes))
     payload: Mapped[dict] = mapped_column(JSONB)
 
-    def to_domain(self) -> DomainEvent:
-        event = event_type_mapper[self.event_type]
-        return event(**self.payload, payload=self.payload)
+    def to_domain(self) -> Event:
+        event: Type[StepCompleted] = order_event_type_mapper[self.event_type]
+        return event(**self.payload)
