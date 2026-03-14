@@ -1,16 +1,15 @@
-from src.domain.enums import EventTypes, OrderEventTypes
-from src.domain.events import (
-    FailedCreateOrder,
-    OrderCreated,
-    PaymentCharged,
-    ProductsCommitted,
-    ProductsReserved,
-)
+from src.domain.enums import EventTypes
+from src.domain.events import StepCompensated, StepCompleted, StepFailed
+
+order_event_type_mapper = {
+    EventTypes.STEP_COMPLETED: StepCompleted,
+    EventTypes.STEP_COMPENSATED: StepCompensated,
+    EventTypes.STEP_FAILED: StepFailed,
+}
+
 
 event_type_mapper = {
-    OrderEventTypes.ORDER_CREATED: OrderCreated,
-    OrderEventTypes.PAYMENT_CHARGED: PaymentCharged,
-    OrderEventTypes.FAILED_CREATE_ORDER: FailedCreateOrder,
-    EventTypes.PRODUCTS_RESERVED: ProductsReserved,
-    EventTypes.PRODUCTS_COMMITTED: ProductsCommitted,
+    StepCompleted.__name__: EventTypes.STEP_COMPLETED,
+    StepCompensated.__name__: EventTypes.STEP_COMPENSATED,
+    StepFailed.__name__: EventTypes.STEP_FAILED,
 }
