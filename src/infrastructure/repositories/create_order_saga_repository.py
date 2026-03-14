@@ -14,8 +14,7 @@ class CreateOrderSagaRepository(SQLAlchemyRepository, ICreateOrderSagaRepository
         self.__session = session
         super().__init__(session, CreateOrderSagaModel)
 
-    async def start(self, order: Order, customer_id: UUID):
-        saga_id = uuid4()
+    async def start(self, saga_id: UUID, order: Order, customer_id: UUID):
         step_id = uuid4()
         payload = {
             'customer_id': str(customer_id),
