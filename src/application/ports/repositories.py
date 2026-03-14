@@ -5,8 +5,8 @@ from uuid import UUID
 from sqlalchemy.orm import InstrumentedAttribute
 
 from src.domain.aggregates import Order
-from src.domain.events import DomainEvent
-from src.infrastructure.models import Base
+from src.domain.events import Event
+from src.infrastructure.models import Base, OrderEventModel
 
 T = TypeVar('T', bound=Base)
 
@@ -61,7 +61,7 @@ class IOrderRepository(ISQLAlchemyRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def append_events(self, order_id: UUID, expected_version: int, events: list[DomainEvent]):
+    async def append_events(self, order_id: UUID, expected_version: int, events: list[Event]):
         raise NotImplementedError
 
     @abstractmethod
@@ -69,12 +69,15 @@ class IOrderRepository(ISQLAlchemyRepository, ABC):
         raise NotImplementedError
 
 
-class IOrderEventRepository(ISQLAlchemyRepository, ABC): ...
+class IOrderEventRepository(ISQLAlchemyRepository, ABC):
+    @abstractmethod
+    async def load_stream(self, order_id: UUID) -> list[OrderEventModel]:
+        raise NotImplementedError
 
 
 class ICreateOrderSagaRepository(ISQLAlchemyRepository, ABC):
     @abstractmethod
-    async def start(self, order: Order, customer_id: UUID):
+    async def start(self, saga_id: UUID, order: Order, customer_id: UUID):
         raise NotImplementedError
 
 
