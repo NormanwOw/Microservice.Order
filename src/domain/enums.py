@@ -10,15 +10,17 @@ class OrderEventTypes(str, Enum):
     NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED = 'NotifiedCustomerSuccessOrderCreated'
     FAILED_CREATE_ORDER = 'FailedCreateOrder'
 
+    CHARGE_PAYMENT_FAILED = 'ChargePaymentFailed'
+    RESERVE_FAILED = 'ReserveFailed'
+
 
 class EventTypes(str, Enum):
-    PRODUCTS_RESERVED = 'ProductsReserved'
-    PRODUCTS_COMMITTED = 'ProductsCommitted'
-    PAYMENT_CHARGED = 'PaymentCharged'
-
-    CHARGE_PAYMENT_FAILED = 'ChargePaymentFailed'
-    COMMIT_FAILED = 'CommitFailed'
-    RESERVE_FAILED = 'ReserveFailed'
+    SAGA_STARTED = 'SAGA_STARTED'
+    STEP_COMPLETED = 'STEP_COMPLETED'
+    STEP_FAILED = 'STEP_FAILED'
+    STEP_COMPENSATED = 'STEP_COMPENSATED'
+    SAGA_COMPENSATED = 'SAGA_COMPENSATED'
+    SAGA_COMPLETED = 'SAGA_COMPLETED'
 
 
 class CommandTypes(str, Enum):
@@ -27,6 +29,10 @@ class CommandTypes(str, Enum):
     RESERVE_PRODUCTS = 'ReserveProducts'
     COMMIT_PRODUCTS = 'CommitProducts'
     CREATE_ORDER = 'CreateOrder'
+
+    CANCEL_ORDER = 'CancelOrder'
+    CANCEL_RESERVE = 'CancelReserve'
+    CANCEL_PAYMENT = 'CancelPayment'
 
 
 class Currency(str, Enum):
@@ -48,6 +54,7 @@ class CreateOrderSagaStatus(str, Enum):
     WAITING_PRODUCTS_COMMITTED = 'WAITING_PRODUCTS_COMMITTED'
     WAITING_NOTIFY_ORDER_COMPLETED = 'WAITING_NOTIFY_ORDER_COMPLETED'
     COMPLETED = 'COMPLETED'
+    COMPENSATED = 'COMPENSATED'
     FAILED = 'FAILED'
 
 
@@ -60,7 +67,7 @@ class MessageType(str, Enum):
     COMMAND = 'command'
 
 
-class Services(str, Enum):
+class ServiceName(str, Enum):
     ORDER = 'order-service'
     PAYMENT = 'payment-service'
     STOCKS = 'stocks-service'
