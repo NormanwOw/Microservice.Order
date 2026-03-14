@@ -1,7 +1,7 @@
 from src.application.ports.services import IPaymentService
 from src.application.ports.uow import IUnitOfWork
 from src.config import Settings
-from src.domain.commands import ChargePaymentCommand
+from src.domain.commands import CancelCommand, ChargePaymentCommand
 from src.infrastructure.models import OutboxModel
 
 
@@ -17,5 +17,15 @@ class PaymentServiceProxy(IPaymentService):
             external_reference=command.external_reference.to_dict(),
             producer=self.settings.SERVICE_NAME,
             payload=command.payload.to_dict(),
+        )
+        await uow.outbox.add(for_outbox)
+
+    async def compensate(self, uow: IUnitOfWork, command: CancelCommand):
+        for_outbox = OutboxModel(
+            action=command.command_type,
+            topic=self.topic,
+            external_reference=command.external_reference.to_dict(),
+            producer=self.settings.SERVICE_NAME,
+            payload=command.payload,
         )
         await uow.outbox.add(for_outbox)
