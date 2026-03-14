@@ -1,8 +1,8 @@
 """Init
 
-Revision ID: 48eea09f1904
+Revision ID: e4b17dacd1ef
 Revises:
-Create Date: 2026-02-28 13:58:19.729334
+Create Date: 2026-03-14 16:51:33.936040
 
 """
 
@@ -13,7 +13,7 @@ from alembic import op
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '48eea09f1904'
+revision: str = 'e4b17dacd1ef'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -29,14 +29,13 @@ def upgrade() -> None:
         sa.Column(
             'event_type',
             sa.Enum(
-                'ORDER_CREATED',
-                'ORDER_INITIALIZED',
-                'PRODUCTS_RESERVED',
-                'PRODUCTS_COMMITTED',
-                'PAYMENT_CHARGED',
-                'NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED',
-                'FAILED_CREATE_ORDER',
-                name='ordereventtypes',
+                'SAGA_STARTED',
+                'STEP_COMPLETED',
+                'STEP_FAILED',
+                'STEP_COMPENSATED',
+                'SAGA_COMPENSATED',
+                'SAGA_COMPLETED',
+                name='eventtypes',
             ),
             nullable=False,
         ),
@@ -60,6 +59,8 @@ def upgrade() -> None:
                 'PAYMENT_CHARGED',
                 'NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED',
                 'FAILED_CREATE_ORDER',
+                'CHARGE_PAYMENT_FAILED',
+                'RESERVE_FAILED',
                 name='ordereventtypes',
             ),
             nullable=False,
@@ -106,6 +107,7 @@ def upgrade() -> None:
                 'WAITING_PRODUCTS_COMMITTED',
                 'WAITING_NOTIFY_ORDER_COMPLETED',
                 'COMPLETED',
+                'COMPENSATED',
                 'FAILED',
                 name='createordersagastatus',
             ),
@@ -138,6 +140,8 @@ def upgrade() -> None:
                 'PAYMENT_CHARGED',
                 'NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED',
                 'FAILED_CREATE_ORDER',
+                'CHARGE_PAYMENT_FAILED',
+                'RESERVE_FAILED',
                 name='ordereventtypes',
             ),
             nullable=False,
