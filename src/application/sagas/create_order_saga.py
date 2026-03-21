@@ -12,9 +12,8 @@ from src.domain.commands import (
     CancelCommand,
     ChargePaymentCommand,
     CommitProductsCommand,
+    NotifyCommand,
     PaymentPayload,
-    SendSuccessCreatedOrderNotifyCommand,
-    SuccessCreatedOrderNotifyPayload,
 )
 from src.domain.entities import Product
 from src.domain.enums import (
@@ -199,18 +198,20 @@ class CreateOrderSaga:
         message.external_reference.version += 1
         order_version = message.external_reference.version
 
-        command = SendSuccessCreatedOrderNotifyCommand(
+        command = NotifyCommand(
+            command_type=CommandTypes.SEND_SUCCESS_NOTIFY,
             external_reference=message.external_reference,
-            payload=SuccessCreatedOrderNotifyPayload(
-                user_id=saga.context['customer_id'], products=message.payload.products
-            ),
+            payload={
+                'user_id': saga.context['customer_id'],
+                'products': [product.to_dict() for product in message.payload.products],
+            },
         )
-        await self.notifications_service.notify_success_created_order(uow, command)
+        await self.notifications_service.notify(uow, command)
         step = CreateOrderSagaStepModel(
             saga_id=saga.id,
             event_type=OrderEventTypes.NOTIFIED_CUSTOMER_SUCCESS_ORDER_CREATED,
             status=CreateOrderStepStatus.IN_PROGRESS,
-            payload=command.payload.to_dict(),
+            payload=command.payload,
         )
 
         await uow.create_order_saga_step.add(step)
@@ -225,6 +226,11 @@ class CreateOrderSaga:
         saga = await self.get_saga(uow, order_id)
         events: list[OrderEventModel] = await uow.order_events.load_stream(order_id)
         completed_steps = [e for e in events if e.event_type == EventTypes.STEP_COMPLETED]
+
+        for step in saga.steps:
+            if step.event_type == message.payload.failed_event:
+                step.status = CreateOrderStepStatus.FAILED
+                break
 
         compensation_events = []
         for step in reversed(completed_steps):
@@ -259,3 +265,12 @@ class CreateOrderSaga:
         saga.state = CreateOrderSagaStatus.COMPENSATED
         saga.order_version = order_version
         saga.order.version = order_version
+        command = NotifyCommand(
+            command_type=CommandTypes.SEND_FAILED_NOTIFY,
+            external_reference=message.external_reference,
+            payload={
+                'user_id': saga.context['customer_id'],
+                'error_message': message.payload.error_message,
+            },
+        )
+        await self.notifications_service.notify(uow, command)

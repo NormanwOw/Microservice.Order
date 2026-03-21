@@ -22,6 +22,11 @@ class Command(PydanticBase):
     external_reference: ExternalReference | None = None
 
 
+class NotifyCommand(Command):
+    command_type: CommandTypes
+    payload: dict
+
+
 class CreateOrderCommand(Command):
     command_type: CommandTypes = CommandTypes.CREATE_ORDER
     order_id: UUID = Field(default_factory=uuid.uuid4)
@@ -49,16 +54,6 @@ class PaymentPayload(PydanticBase):
 class ChargePaymentCommand(Command):
     command_type: CommandTypes = CommandTypes.CHARGE_PAYMENT
     payload: PaymentPayload
-
-
-class SuccessCreatedOrderNotifyPayload(PydanticBase):
-    user_id: UUID
-    products: list[Product]
-
-
-class SendSuccessCreatedOrderNotifyCommand(Command):
-    command_type: CommandTypes = CommandTypes.SEND_SUCCESS_CREATED_ORDER_NOTIFY
-    payload: SuccessCreatedOrderNotifyPayload
 
 
 class CancelCommand(Command):
