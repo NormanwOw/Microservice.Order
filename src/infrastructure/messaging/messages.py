@@ -54,6 +54,7 @@ class ProductsCommittedMessage(EventMessage):
 
 
 class FailedEventPayload(PydanticBase):
+    failed_event: OrderEventTypes
     error_message: str
 
 

@@ -5,8 +5,8 @@ from src.domain.commands import (
     CancelCommand,
     ChargePaymentCommand,
     CommitProductsCommand,
+    NotifyCommand,
     ReserveProductsCommand,
-    SendSuccessCreatedOrderNotifyCommand,
 )
 
 
@@ -22,9 +22,7 @@ class IPaymentService(ABC):
 
 class INotificationService(ABC):
     @abstractmethod
-    async def notify_success_created_order(
-        self, uow: IUnitOfWork, command: SendSuccessCreatedOrderNotifyCommand
-    ):
+    async def notify(self, uow: IUnitOfWork, command: NotifyCommand):
         raise NotImplementedError
 
 

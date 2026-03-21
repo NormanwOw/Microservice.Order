@@ -25,10 +25,12 @@ class EventTypes(str, Enum):
 
 class CommandTypes(str, Enum):
     CHARGE_PAYMENT = 'ChargePayment'
-    SEND_SUCCESS_CREATED_ORDER_NOTIFY = 'SendSuccessCreatedOrderNotify'
     RESERVE_PRODUCTS = 'ReserveProducts'
     COMMIT_PRODUCTS = 'CommitProducts'
     CREATE_ORDER = 'CreateOrder'
+
+    SEND_SUCCESS_NOTIFY = 'SendSuccessNotify'
+    SEND_FAILED_NOTIFY = 'SendFailedNotify'
 
     CANCEL_ORDER = 'CancelOrder'
     CANCEL_RESERVE = 'CancelReserve'
