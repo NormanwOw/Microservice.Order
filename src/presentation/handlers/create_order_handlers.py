@@ -1,3 +1,5 @@
+from typing import Annotated, Any
+
 from src.application.disp_depends import DispDepends
 from src.application.dispatcher import dispatcher
 from src.application.ports.uow import IUnitOfWork
@@ -18,9 +20,9 @@ from src.presentation.dependencies.order_dependencies import OrderDependencies
 @dispatcher.register(OrderEventTypes.PRODUCTS_RESERVED)
 async def handle_products_reserved(
     uow: IUnitOfWork,
-    message: dict,
-    saga: CreateOrderSaga = DispDepends(OrderDependencies.create_order_saga),
-):
+    message: dict[str, Any],
+    saga: Annotated[CreateOrderSaga, DispDepends(OrderDependencies.create_order_saga)],
+) -> None:
     msg = ProductsReservedMessage(**message)
     await saga.on_products_reserved(uow, msg)
     logger.info(f'Products reserved for order {msg.external_reference.id}')
@@ -29,9 +31,9 @@ async def handle_products_reserved(
 @dispatcher.register(OrderEventTypes.PAYMENT_CHARGED)
 async def handle_payment_charged(
     uow: IUnitOfWork,
-    message: dict,
-    saga: CreateOrderSaga = DispDepends(OrderDependencies.create_order_saga),
-):
+    message: dict[str, Any],
+    saga: Annotated[CreateOrderSaga, DispDepends(OrderDependencies.create_order_saga)],
+) -> None:
     msg = PaymentChargedMessage(**message)
     await saga.on_payment_charged(uow, msg)
     logger.info(f'Payment charged for order {msg.external_reference.id}')
@@ -40,9 +42,9 @@ async def handle_payment_charged(
 @dispatcher.register(OrderEventTypes.PRODUCTS_COMMITTED)
 async def handle_products_committed(
     uow: IUnitOfWork,
-    message: dict,
-    saga: CreateOrderSaga = DispDepends(OrderDependencies.create_order_saga),
-):
+    message: dict[str, Any],
+    saga: Annotated[CreateOrderSaga, DispDepends(OrderDependencies.create_order_saga)],
+) -> None:
     msg = ProductsCommittedMessage(**message)
     await saga.on_products_committed(uow, msg)
     logger.info(f'Products committed for order {msg.external_reference.id}')
@@ -51,9 +53,9 @@ async def handle_products_committed(
 @dispatcher.register(OrderEventTypes.CHARGE_PAYMENT_FAILED)
 async def handle_charge_payment_failed(
     uow: IUnitOfWork,
-    message: dict,
-    saga: CreateOrderSaga = DispDepends(OrderDependencies.create_order_saga),
-):
+    message: dict[str, Any],
+    saga: Annotated[CreateOrderSaga, DispDepends(OrderDependencies.create_order_saga)],
+) -> None:
     msg = FailedEventMessage(**message)
     await saga.compensate(uow, msg)
     logger.info(
@@ -64,9 +66,9 @@ async def handle_charge_payment_failed(
 @dispatcher.register(OrderEventTypes.RESERVE_FAILED)
 async def handle_reserve_products_failed(
     uow: IUnitOfWork,
-    message: dict,
-    saga: CreateOrderSaga = DispDepends(OrderDependencies.create_order_saga),
-):
+    message: dict[str, Any],
+    saga: Annotated[CreateOrderSaga, DispDepends(OrderDependencies.create_order_saga)],
+) -> None:
     msg = FailedEventMessage(**message)
     await saga.compensate(uow, msg)
     logger.info(
@@ -77,9 +79,9 @@ async def handle_reserve_products_failed(
 @dispatcher.register(CommandTypes.CANCEL_ORDER)
 async def handle_cancel_order(
     uow: IUnitOfWork,
-    message: dict,
-    cancel_order: CancelOrder = DispDepends(OrderDependencies.cancel_order),
-):
+    message: dict[str, Any],
+    cancel_order: Annotated[CancelOrder, DispDepends(OrderDependencies.cancel_order)],
+) -> None:
     msg = CancelOrderMessage(**message)
     await cancel_order(uow, msg)
     logger.info(f'Cancelled order {msg.external_reference.id}')

@@ -1,9 +1,9 @@
 import asyncio
 import traceback
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
+from typing import AsyncIterator, Awaitable, Callable
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -29,9 +29,11 @@ app = FastAPI(title='Order Service', version='0.0.1', lifespan=lifespan)
 
 
 class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         try:
-            response = await call_next(request)
+            response: Response = await call_next(request)
             return response
         except tuple(exceptions_mapper.keys()) as ex:
             http_exc = exceptions_mapper[type(ex)]

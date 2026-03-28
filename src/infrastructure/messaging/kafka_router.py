@@ -1,4 +1,5 @@
 import asyncio
+from typing import Union
 
 from sqlalchemy.exc import IntegrityError
 from tenacity import AsyncRetrying, RetryError, stop_after_attempt, wait_fixed
@@ -19,9 +20,10 @@ class KafkaMessageRouter:
         self.consumer = consumer
         self.logger = logger
 
-    async def run(self):
+    async def run(self) -> None:
         await self.consumer.start()
         try:
+            message_schema: Union[EventMessage, CommandMessage]
             while True:
                 try:
                     async for msg in self.consumer:

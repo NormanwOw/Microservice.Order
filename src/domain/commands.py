@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from typing import Any
 from uuid import UUID
 
 from pydantic import Field
@@ -24,7 +25,7 @@ class Command(PydanticBase):
 
 class NotifyCommand(Command):
     command_type: CommandTypes
-    payload: dict
+    payload: dict[str, Any]
 
 
 class CreateOrderCommand(Command):
@@ -57,4 +58,4 @@ class ChargePaymentCommand(Command):
 
 
 class CancelCommand(Command):
-    payload: dict
+    payload: dict[str, Any]

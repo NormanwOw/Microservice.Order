@@ -1,12 +1,18 @@
 import inspect
+from typing import Any, Awaitable, Callable, ParamSpec, TypeVar
+
+P = ParamSpec('P')
+R = TypeVar('R')
 
 
 class DispDepends:
-    def __init__(self, provider):
+    def __init__(self, provider: Callable[..., Any] | Callable[..., Awaitable[Any]]) -> None:
         self.provider = provider
 
 
-async def resolve_dependencies(func, provided_kwargs: dict) -> dict:
+async def resolve_dependencies(
+    func: Callable[P, R], provided_kwargs: dict[Any, Any]
+) -> dict[str, Any]:
     signature = inspect.signature(func)
     resolved_kwargs = dict(provided_kwargs)
 

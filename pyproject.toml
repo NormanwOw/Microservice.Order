@@ -9,6 +9,7 @@ dependencies = [
     "alembic>=1.17.2",
     "asyncpg>=0.31.0",
     "fastapi>=0.122.0",
+    "mypy>=1.19.1",
     "pre-commit>=4.5.0",
     "psycopg[binary]>=3.2.13",
     "pydantic-settings>=2.12.0",

@@ -6,5 +6,5 @@ router = APIRouter(prefix=f'/api/v{VERSION}', tags=['Main'])
 
 
 @router.get('/healthy')
-def health_check():
+def health_check() -> dict[str, str]:
     return {'status': 'ok'}

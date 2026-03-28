@@ -4,7 +4,7 @@ from src.infrastructure.models import OrderModel
 
 
 class CancelOrder:
-    async def __call__(self, uow: IUnitOfWork, message: CancelOrderMessage):
+    async def __call__(self, uow: IUnitOfWork, message: CancelOrderMessage) -> None:
         await uow.orders.update(
             {'status': message.payload['status']}, OrderModel.id, message.external_reference.id
         )

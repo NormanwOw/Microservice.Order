@@ -1,34 +1,35 @@
-import json
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
+from src.domain.base import PydanticBase
 from src.domain.entities import Product
 from src.domain.enums import AggregateType, CommandTypes, OrderEventTypes
 from src.domain.events import StepCompensated, StepCompleted, StepFailed
 
 
-class Aggregate(BaseModel):
+class Aggregate(PydanticBase):
     id: UUID | None = None
     status: OrderEventTypes | None = None
     version: int = Field(default=0)
     created_at: datetime = Field(default_factory=datetime.now)
     type: AggregateType
 
-    def to_dict(self) -> dict:
-        return json.loads(self.model_dump_json())
-
 
 class Order(Aggregate):
-    products: list[Product] | None = None
+    products: list[Product]
     type: AggregateType = AggregateType.ORDER
 
-    def apply(self, event: StepCompleted | StepCompensated | StepFailed):
-        if event.command_type == CommandTypes.CREATE_ORDER:
-            self.id = event.command_payload['external_reference']['id']
-            self.status = OrderEventTypes.ORDER_CREATED
-            self.products = [Product(**product) for product in event.command_payload['products']]
+    def apply(self, event: StepCompleted | StepCompensated | StepFailed) -> None:
+        if isinstance(event, StepCompleted):
+            if event.command_type == CommandTypes.CREATE_ORDER and event.command_payload:
+                self.id = event.command_payload['external_reference']['id']
+                self.status = OrderEventTypes.ORDER_CREATED
+
+                products = event.command_payload.get('products')
+                if products and products:
+                    self.products.extend([Product(**p) for p in products])
 
         elif event.command_type == CommandTypes.RESERVE_PRODUCTS:
             self.status = OrderEventTypes.PRODUCTS_RESERVED

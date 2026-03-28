@@ -5,7 +5,7 @@ from src.application.ports.logger import ILogger
 
 
 class Logger(ILogger):
-    def __init__(self):
+    def __init__(self) -> None:
         self.__logger = logging.getLogger()
         self.__logger.setLevel(logging.INFO)
         self.__uvicorn_logger = logging.getLogger('uvicorn')
@@ -23,16 +23,16 @@ class Logger(ILogger):
             console_handler.setFormatter(formatter)
             self.__logger.addHandler(console_handler)
 
-    def info(self, message):
+    def info(self, message: str) -> None:
         self.__logger.info(message)
 
-    def error(self, message):
-        self.__logger.error(message, exc_info=True)
+    def error(self, message: str, exc_info: bool = True) -> None:
+        self.__logger.error(message, exc_info=exc_info)
 
-    def warning(self, message):
+    def warning(self, message: str) -> None:
         self.__logger.warning(message)
 
-    def debug(self, message):
+    def debug(self, message: str) -> None:
         self.__logger.debug(message)
 
 
