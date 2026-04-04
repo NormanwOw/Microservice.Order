@@ -1,0 +1,63 @@
+name: orders-service
+
+services:
+  orders-backend:
+    image: normanwow/order-service:latest
+    restart: unless-stopped
+    volumes:
+      - .env-orders:/app/orders-deploy/.env
+    ports:
+      - "8000:8000"
+    container_name: microservice.orders
+    command: bash -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000"
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/healthy')" ]
+      interval: 99999h
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - orders-network
+      - kafka-network
+    depends_on:
+      orders-postgres:
+        condition: service_healthy
+
+  orders-publisher:
+    image: normanwow/publisher:latest
+    restart: unless-stopped
+    volumes:
+      - .env-ms-orders:/app/deploy/.env
+    container_name: publisher.orders
+    networks:
+      - orders-network
+      - kafka-network
+    depends_on:
+      orders-backend:
+        condition: service_healthy
+
+  orders-postgres:
+    image: postgres:16-alpine
+    restart: always
+    user: "70:70"
+    volumes:
+      - orders_postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env-ms-orders
+    container_name: postgres.orders
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+    networks:
+      - orders-network
+
+volumes:
+  orders_postgres_data: {}
+
+networks:
+  orders-network: {}
+  kafka-network:
+    external: true
