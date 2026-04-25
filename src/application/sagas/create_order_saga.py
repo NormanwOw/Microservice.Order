@@ -1,6 +1,8 @@
+from typing import cast
 from uuid import UUID
 
 from src.application.ports.services import (
+    BaseService,
     INotificationService,
     IOrderServiceProxy,
     IPaymentService,
@@ -58,8 +60,9 @@ class CreateOrderSaga:
         }
 
     async def get_saga(self, uow: IUnitOfWork, order_id: UUID) -> CreateOrderSagaModel:
-        saga: CreateOrderSagaModel = await uow.create_order_saga.find_one(
-            CreateOrderSagaModel.order_id, order_id
+        saga = cast(
+            CreateOrderSagaModel,
+            await uow.create_order_saga.find_one(CreateOrderSagaModel.order_id, order_id),
         )
         if not saga:
             raise SagaDoesNotExist
@@ -67,13 +70,15 @@ class CreateOrderSaga:
         return saga
 
     async def get_order(self, uow: IUnitOfWork, order_id: UUID, aggregate_version: int) -> Order:
-        order: Order = await uow.orders.load(order_id=order_id)
+        order: Order | None = await uow.orders.load(order_id=order_id)
         if order is None or order.version != aggregate_version:
             raise OrderDoesNotExist
 
         return order
 
-    async def on_products_reserved(self, uow: IUnitOfWork, message: ProductsReservedMessage):
+    async def on_products_reserved(
+        self, uow: IUnitOfWork, message: ProductsReservedMessage
+    ) -> None:
         order_id = message.external_reference.id
         saga = await self.get_saga(uow, order_id)
 
@@ -127,7 +132,7 @@ class CreateOrderSaga:
         saga.order_version = order_version
         saga.order.version = order_version
 
-    async def on_payment_charged(self, uow: IUnitOfWork, message: PaymentChargedMessage):
+    async def on_payment_charged(self, uow: IUnitOfWork, message: PaymentChargedMessage) -> None:
         order_id = message.external_reference.id
         saga = await self.get_saga(uow, order_id)
         event = StepCompleted(
@@ -173,7 +178,9 @@ class CreateOrderSaga:
         saga.order_version = order_version
         saga.order.version = order_version
 
-    async def on_products_committed(self, uow: IUnitOfWork, message: ProductsCommittedMessage):
+    async def on_products_committed(
+        self, uow: IUnitOfWork, message: ProductsCommittedMessage
+    ) -> None:
         order_id = message.external_reference.id
         saga = await self.get_saga(uow, order_id)
 
@@ -221,15 +228,15 @@ class CreateOrderSaga:
         saga.order_version = order_version
         saga.order.version = order_version
 
-    async def compensate(self, uow: IUnitOfWork, message: FailedEventMessage):
+    async def compensate(self, uow: IUnitOfWork, message: FailedEventMessage) -> None:
         order_id = message.external_reference.id
         saga = await self.get_saga(uow, order_id)
         events: list[OrderEventModel] = await uow.order_events.load_stream(order_id)
         completed_steps = [e for e in events if e.event_type == EventTypes.STEP_COMPLETED]
 
-        for step in saga.steps:
-            if step.event_type == message.payload.failed_event:
-                step.status = CreateOrderStepStatus.FAILED
+        for saga_step in saga.steps:
+            if saga_step.event_type == message.payload.failed_event:
+                saga_step.status = CreateOrderStepStatus.FAILED
                 break
 
         compensation_events = []
@@ -240,7 +247,7 @@ class CreateOrderSaga:
             if step.payload['service'] == ServiceName.ORDER:
                 step.payload['compensation_payload'] = {'status': message.action}
 
-            service = self.service_mapper[step.payload['service']]
+            service: BaseService = self.service_mapper[step.payload['service']]
             cancel_command = CancelCommand(
                 command_type=step.payload['compensation_command_type'],
                 external_reference=message.external_reference,
@@ -250,7 +257,7 @@ class CreateOrderSaga:
             compensation_events.append(
                 StepCompensated(
                     saga_id=saga.id,
-                    step_name=step.payload['command_type'],
+                    command_type=step.payload['command_type'],
                     status=message.action,
                 )
             )

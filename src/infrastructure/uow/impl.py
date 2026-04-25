@@ -1,3 +1,8 @@
+from types import TracebackType
+from typing import Callable, Optional, Self, Type
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from src.application.ports.repositories import (
     ICreateOrderSagaRepository,
     ICreateOrderSagaStepRepository,
@@ -23,22 +28,27 @@ from src.infrastructure.session import async_session
 
 
 class UnitOfWork(IUnitOfWork):
-    def __init__(self, session_factory):
+    def __init__(self, session_factory: Callable[[], AsyncSession]) -> None:
         self.__session_factory = session_factory
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> Self:
         self.__session = self.__session_factory()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType],
+    ) -> None:
         if exc_val:
             await self.rollback()
         await self.__session.close()
 
-    async def commit(self):
+    async def commit(self) -> None:
         await self.__session.commit()
 
-    async def rollback(self):
+    async def rollback(self) -> None:
         await self.__session.rollback()
 
     @property

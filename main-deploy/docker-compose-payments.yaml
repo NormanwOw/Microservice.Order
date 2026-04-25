@@ -1,0 +1,58 @@
+name: payments-service
+
+services:
+  payment-backend:
+    image: normanwow/payment-service:latest
+    restart: unless-stopped
+    volumes:
+      - .env-payments:/app/payment-deploy/.env
+    container_name: microservice.payment
+    command: bash -c "alembic upgrade head && python3 src/main.py"
+    networks:
+      - main-network
+      - kafka-network
+      - payment-network
+    depends_on:
+      payment-postgres:
+        condition: service_healthy
+
+  payment-publisher:
+    image: normanwow/publisher:latest
+    restart: unless-stopped
+    volumes:
+      - .env-ms-payments:/app/deploy/.env
+    container_name: publisher.payment
+    command: ["sh", "-c", "sleep 10 && python3 src/main.py"]
+    networks:
+      - kafka-network
+      - payment-network
+    depends_on:
+      - payment-backend
+
+  payment-postgres:
+    image: postgres:16-alpine
+    restart: always
+    user: "70:70"
+    volumes:
+      - payment_postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env-ms-payments
+    container_name: postgres.payment
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 60s
+      retries: 5
+      start_period: 10s
+    networks:
+      - payment-network
+
+volumes:
+  payment_postgres_data: {}
+
+networks:
+  main-network:
+    external: true
+  payment-network: {}
+  kafka-network:
+    external: true

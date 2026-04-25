@@ -1,3 +1,4 @@
+from typing import Iterable, cast
 from uuid import UUID
 
 from sqlalchemy import select
@@ -19,4 +20,4 @@ class OrderEventRepository(SQLAlchemyRepository, IOrderEventRepository):
             .filter(OrderEventModel.order_id == order_id)
             .order_by(OrderEventModel.created_at)
         )
-        return list(resp.all())
+        return list(cast(Iterable[OrderEventModel], resp.all()))

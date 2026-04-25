@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, TypeVar
+from typing import Any, Sequence, TypeVar
 from uuid import UUID
 
 from sqlalchemy.orm import InstrumentedAttribute
@@ -19,33 +19,33 @@ class ISQLAlchemyRepository(ABC):
     @abstractmethod
     async def find_all(
         self,
-        filter_field: InstrumentedAttribute = None,
+        filter_field: InstrumentedAttribute[Any] | None = None,
         filter_value: Any = None,
-        order_by: InstrumentedAttribute = None,
+        order_by: InstrumentedAttribute[Any] | None = None,
     ) -> list[T]:
         raise NotImplementedError
 
     @abstractmethod
     async def find_one(
-        self, filter_field: InstrumentedAttribute = None, filter_value: Any = None
-    ) -> T:
+        self, filter_field: InstrumentedAttribute[Any] | None = None, filter_value: Any = None
+    ) -> T | None:
         raise NotImplementedError
 
     @abstractmethod
     async def update(
         self,
-        values: dict,
-        filter_field: InstrumentedAttribute = None,
+        values: dict[Any, Any],
+        filter_field: InstrumentedAttribute[Any] | None = None,
         filter_value: Any = None,
-    ):
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_one(self, filter_field: InstrumentedAttribute, filter_value: Any):
+    async def delete_one(self, filter_field: InstrumentedAttribute[Any], filter_value: Any) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def delete(self):
+    async def delete(self) -> None:
         raise NotImplementedError
 
 
@@ -61,11 +61,13 @@ class IOrderRepository(ISQLAlchemyRepository, ABC):
         raise NotImplementedError
 
     @abstractmethod
-    async def append_events(self, order_id: UUID, expected_version: int, events: list[Event]):
+    async def append_events(
+        self, order_id: UUID, expected_version: int, events: Sequence[Event]
+    ) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    async def upsert_projection(self, order: Order, customer_id: UUID):
+    async def upsert_projection(self, order: Order, customer_id: UUID) -> None:
         raise NotImplementedError
 
 
@@ -77,7 +79,7 @@ class IOrderEventRepository(ISQLAlchemyRepository, ABC):
 
 class ICreateOrderSagaRepository(ISQLAlchemyRepository, ABC):
     @abstractmethod
-    async def start(self, saga_id: UUID, order: Order, customer_id: UUID):
+    async def start(self, saga_id: UUID, order: Order, customer_id: UUID) -> None:
         raise NotImplementedError
 
 

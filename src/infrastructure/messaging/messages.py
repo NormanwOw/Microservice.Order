@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import Field
@@ -45,7 +46,7 @@ class ProductsReservedMessage(EventMessage):
 
 class PaymentChargedMessage(EventMessage):
     action: OrderEventTypes = OrderEventTypes.PAYMENT_CHARGED
-    payload: dict
+    payload: dict[str, Any]
 
 
 class ProductsCommittedMessage(EventMessage):
@@ -65,4 +66,4 @@ class FailedEventMessage(EventMessage):
 
 
 class CancelOrderMessage(CommandMessage):
-    payload: dict
+    payload: dict[str, Any]

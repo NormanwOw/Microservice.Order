@@ -1,50 +1,51 @@
+name: stocks-service
+
 services:
-  orders-backend:
-    build:
-      context: ./../
-    image: microservice.orders:latest
+  stocks-backend:
+    image: normanwow/stocks-service:latest
     restart: unless-stopped
     volumes:
-      - .env:/app/orders-deploy/.env
+      - .env-stocks:/app/stocks-deploy/.env
     ports:
-      - "8000:8000"
-    container_name: microservice.orders
+      - "8001:8000"
+    container_name: microservice.stocks
+    command: bash -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000"
     healthcheck:
       test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/healthy')" ]
-      interval: 200s
+      interval: 99999h
       timeout: 5s
       retries: 5
       start_period: 15s
-    command: bash -c "alembic upgrade head && uvicorn src.main:app --host 0.0.0.0 --port 8000"
     networks:
+      - main-network
       - kafka-network
-      - orders-network
+      - stocks-network
     depends_on:
-      orders-postgres:
+      stocks-postgres:
         condition: service_healthy
 
-  orders-publisher:
+  stocks-publisher:
     image: normanwow/publisher:latest
     restart: unless-stopped
     volumes:
-      - .env-ms-orders:/app/deploy/.env
-    container_name: publisher.orders
+      - .env-ms-stocks:/app/deploy/.env
+    container_name: publisher.stocks
     networks:
       - kafka-network
-      - orders-network
+      - stocks-network
     depends_on:
-      orders-backend:
+      stocks-backend:
         condition: service_healthy
 
-  orders-postgres:
+  stocks-postgres:
     image: postgres:16-alpine
     restart: always
     user: "70:70"
     volumes:
-      - orders_postgres_data:/var/lib/postgresql/data/
+      - stocks_postgres_data:/var/lib/postgresql/data/
     env_file:
-      - .env-ms-orders
-    container_name: postgres.orders
+      - .env-ms-stocks
+    container_name: postgres.stocks
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
       interval: 10s
@@ -52,12 +53,14 @@ services:
       retries: 5
       start_period: 10s
     networks:
-      - orders-network
+      - stocks-network
 
 volumes:
-  orders_postgres_data: {}
+  stocks_postgres_data: {}
 
 networks:
-  orders-network: {}
+  main-network:
+    external: true
+  stocks-network: {}
   kafka-network:
     external: true

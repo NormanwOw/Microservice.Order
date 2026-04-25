@@ -4,26 +4,23 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file='orders-deploy/.env', env_file_encoding='utf-8')
 
-    DEBUG: bool
+    DEBUG: bool = False
 
-    DB_HOST: str
-    DB_PORT: str
-    POSTGRES_USER: str
-    POSTGRES_DB: str
-    POSTGRES_PASSWORD: str
+    DB_HOST: str = ''
+    DB_PORT: str = ''
+    POSTGRES_USER: str = ''
+    POSTGRES_DB: str = ''
+    POSTGRES_PASSWORD: str = ''
 
-    KAFKA_HOSTS: list[str]
+    KAFKA_HOSTS: list[str] = []
 
-    SAGA_EVENTS_TOPIC: str
-    PAYMENT_EVENTS_TOPIC: str
-    STOCKS_EVENTS_TOPIC: str
-    NOTIFICATION_EVENTS_TOPIC: str
-    ORDER_COMMANDS_TOPIC: str
-    STOCKS_COMMANDS_TOPIC: str
-    PAYMENT_COMMANDS_TOPIC: str
-    NOTIFICATION_COMMANDS_TOPIC: str
+    SAGA_EVENTS_TOPIC: str = ''
+    ORDER_COMMANDS_TOPIC: str = ''
+    STOCKS_COMMANDS_TOPIC: str = ''
+    PAYMENT_COMMANDS_TOPIC: str = ''
+    NOTIFICATION_COMMANDS_TOPIC: str = ''
 
-    SERVICE_NAME: str
+    SERVICE_NAME: str = ''
 
 
 settings = Settings()

@@ -17,7 +17,7 @@ class OrderDependencies:
     notification_service = NotificationServiceProxy(settings)
 
     @classmethod
-    async def create_order(cls):
+    async def create_order(cls) -> CreateOrder:
         return CreateOrder(get_uow(), cls.stocks_service, settings, logger)
 
     @classmethod
@@ -27,5 +27,5 @@ class OrderDependencies:
         )
 
     @classmethod
-    async def cancel_order(cls):
+    async def cancel_order(cls) -> CancelOrder:
         return CancelOrder()

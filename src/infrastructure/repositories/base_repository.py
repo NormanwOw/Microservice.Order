@@ -1,13 +1,10 @@
-from typing import Any, Type, TypeVar
+from typing import Any, Iterable, Type, cast
 
 from sqlalchemy import delete, desc, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
-from src.application.ports.repositories import ISQLAlchemyRepository
-from src.infrastructure.models import Base
-
-T = TypeVar('T', bound=Base)
+from src.application.ports.repositories import ISQLAlchemyRepository, T
 
 
 class SQLAlchemyRepository(ISQLAlchemyRepository):
@@ -22,48 +19,48 @@ class SQLAlchemyRepository(ISQLAlchemyRepository):
 
     async def find_all(
         self,
-        filter_field: InstrumentedAttribute = None,
+        filter_field: InstrumentedAttribute[Any] | None = None,
         filter_value: Any = None,
-        order_by: InstrumentedAttribute = None,
+        order_by: InstrumentedAttribute[Any] | None = None,
     ) -> list[T]:
         if not filter_field or not filter_value:
             if order_by:
                 res = await self.session.execute(select(self.model).order_by(desc(order_by)))
             else:
                 res = await self.session.execute(select(self.model))
-            return res.scalars().all()
+            return list(cast(Iterable[T], res.scalars().all()))
 
         if order_by:
             query = select(self.model).where(filter_field == filter_value).order_by(desc(order_by))
         else:
             query = select(self.model).where(filter_field == filter_value)
         res = await self.session.execute(query)
-        return res.scalars().all()
+        return list(cast(Iterable[T], res.scalars().all()))
 
-    async def find_one(
-        self, filter_field: InstrumentedAttribute = None, filter_value: Any = None
-    ) -> T:
+    async def find_one(  # type: ignore
+        self, filter_field: InstrumentedAttribute[Any] | None = None, filter_value: Any = None
+    ) -> T | None:
         if filter_field and filter_value:
             query = select(self.model).where(filter_field == filter_value)
         else:
             query = select(self.model)
         res = await self.session.execute(query)
-        return res.scalars().first()
+        return cast(T | None, res.scalars().first())
 
     async def update(
         self,
-        values: dict,
-        filter_field: InstrumentedAttribute = None,
+        values: dict[str, Any],
+        filter_field: InstrumentedAttribute[Any] | None = None,
         filter_value: Any = None,
-    ):
+    ) -> None:
         if filter_field and filter_value:
             stmt = update(self.model).values(**values).where(filter_field == filter_value)
         else:
             stmt = update(self.model).values(**values)
         await self.session.execute(stmt)
 
-    async def delete_one(self, filter_field: InstrumentedAttribute, filter_value: Any):
+    async def delete_one(self, filter_field: InstrumentedAttribute[Any], filter_value: Any) -> None:
         await self.session.execute(delete(self.model).where(filter_field == filter_value))
 
-    async def delete(self):
+    async def delete(self) -> None:
         await self.session.execute(delete(self.model))

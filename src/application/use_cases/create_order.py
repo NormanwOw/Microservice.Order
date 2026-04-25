@@ -34,7 +34,7 @@ class CreateOrder:
             if order is not None:
                 raise OrderAlreadyExists
 
-            order = Order()
+            order = Order(products=[])
             saga_id = uuid.uuid4()
 
             external_reference = ExternalReference(
@@ -70,4 +70,4 @@ class CreateOrder:
                 f'Order {order.id} created. Products: {command.products}. '
                 f'Customer: {command.customer_id}'
             )
-            return CreateOrderResponse(order_id=order.id)
+            return CreateOrderResponse(order_id=order.id or uuid.uuid4())

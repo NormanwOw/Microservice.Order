@@ -7,15 +7,15 @@ from src.config import settings
 from src.infrastructure.models import Base
 
 config = context.config
-fileConfig(config.config_file_name)
+fileConfig(config.config_file_name)  # type: ignore
 
 target_metadata = Base.metadata
 
 
-def run_migrations_online():
+def run_migrations_online() -> None:
     url = (
-        f"postgresql+psycopg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"
-        f"{settings.DB_HOST}:{settings.DB_PORT}/{settings.POSTGRES_DB}"
+        f'postgresql+psycopg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@'
+        f'{settings.DB_HOST}:{settings.DB_PORT}/{settings.POSTGRES_DB}'
     )
     engine = create_engine(url)
 

@@ -1,12 +1,12 @@
 import json
 
-from aiokafka import AIOKafkaConsumer
+from aiokafka import AIOKafkaConsumer  # type: ignore
 
 from src.application.ports.broker import IKafkaConsumer
 from src.config import Settings
 
 
-class KafkaConsumer(IKafkaConsumer, AIOKafkaConsumer):
+class KafkaConsumer(IKafkaConsumer, AIOKafkaConsumer):  # type: ignore
     def __init__(self, settings: Settings):
         super().__init__(
             settings.SAGA_EVENTS_TOPIC,

@@ -1,7 +1,9 @@
-from src.domain.enums import EventTypes
-from src.domain.events import StepCompensated, StepCompleted, StepFailed
+from typing import Type
 
-order_event_type_mapper = {
+from src.domain.enums import EventTypes
+from src.domain.events import Event, StepCompensated, StepCompleted, StepFailed
+
+order_event_type_mapper: dict[EventTypes, Type[Event]] = {
     EventTypes.STEP_COMPLETED: StepCompleted,
     EventTypes.STEP_COMPENSATED: StepCompensated,
     EventTypes.STEP_FAILED: StepFailed,

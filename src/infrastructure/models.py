@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import List, Optional, Type
+from typing import Any, List, Optional, Union, cast
 
 from sqlalchemy import UUID, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import JSONB
@@ -13,7 +13,7 @@ from src.domain.enums import (
     EventTypes,
     OrderEventTypes,
 )
-from src.domain.events import Event, StepCompleted
+from src.domain.events import StepCompensated, StepCompleted, StepFailed
 from src.domain.mappers import order_event_type_mapper
 
 
@@ -38,7 +38,7 @@ class OrderModel(Base, CUModel):
     customer_id: Mapped[uuid.UUID] = mapped_column(nullable=False, index=True)
     status: Mapped[str] = mapped_column(Enum(OrderEventTypes), nullable=False, index=True)
     version: Mapped[int] = mapped_column(nullable=False)
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    payload: Mapped[dict[Any, Any]] = mapped_column(JSONB, nullable=False)
 
     saga: Mapped['CreateOrderSagaModel'] = relationship(back_populates='order', lazy='selectin')
 
@@ -52,8 +52,8 @@ class OutboxModel(Base, CUModel):
 
     action: Mapped[str] = mapped_column(nullable=False)
     topic: Mapped[str] = mapped_column(nullable=False)
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
-    external_reference: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    payload: Mapped[dict[Any, Any]] = mapped_column(JSONB, nullable=False)
+    external_reference: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     producer: Mapped[str] = mapped_column(nullable=False)
     published_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), default=None, nullable=True
@@ -74,7 +74,7 @@ class CreateOrderSagaStepModel(Base, CUModel):
     )
     event_type: Mapped[OrderEventTypes] = mapped_column(Enum(OrderEventTypes))
     status: Mapped[str] = mapped_column(Enum(CreateOrderStepStatus), nullable=False)
-    payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    payload: Mapped[dict[Any, Any]] = mapped_column(JSONB, nullable=False)
 
     saga: Mapped['CreateOrderSagaModel'] = relationship(back_populates='steps', lazy='selectin')
 
@@ -86,7 +86,7 @@ class CreateOrderSagaModel(Base, CUModel):
     order_version: Mapped[int] = mapped_column(nullable=False)
     state: Mapped[str] = mapped_column(Enum(CreateOrderSagaStatus), nullable=False)
     current_step_id: Mapped[uuid.UUID] = mapped_column(UUID)
-    context: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    context: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
     steps: Mapped[List['CreateOrderSagaStepModel']] = relationship(
         back_populates='saga', lazy='selectin'
     )
@@ -99,9 +99,12 @@ class OrderEventModel(Base, CUModel):
 
     order_id: Mapped[uuid.UUID] = mapped_column(UUID, index=True)
     version: Mapped[int] = mapped_column()
-    event_type: Mapped[str] = mapped_column(Enum(EventTypes))
-    payload: Mapped[dict] = mapped_column(JSONB)
+    event_type: Mapped[EventTypes] = mapped_column(Enum(EventTypes))
+    payload: Mapped[dict[Any, Any]] = mapped_column(JSONB)
 
-    def to_domain(self) -> Event:
-        event: Type[StepCompleted] = order_event_type_mapper[self.event_type]
-        return event(**self.payload)
+    def to_domain(self) -> Union[StepCompleted, StepCompensated, StepFailed, None]:
+        event = order_event_type_mapper.get(self.event_type)
+        if event:
+            return cast(StepCompleted | StepCompensated | StepFailed, event(**self.payload))
+
+        return None

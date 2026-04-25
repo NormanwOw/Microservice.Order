@@ -1,3 +1,4 @@
+from typing import Sequence
 from uuid import UUID
 
 from sqlalchemy import select
@@ -27,14 +28,18 @@ class OrderRepository(SQLAlchemyRepository, IOrderRepository):
         if not events:
             return None
 
-        order = Order()
+        order = Order(products=[])
         for event_model in events:
-            event = event_model.to_domain()
-            order.apply(event)
+            domain_event = event_model.to_domain()
+            if not domain_event:
+                continue
+            order.apply(domain_event)
 
         return order
 
-    async def append_events(self, order_id: UUID, expected_version: int, events: list[Event]):
+    async def append_events(
+        self, order_id: UUID, expected_version: int, events: Sequence[Event]
+    ) -> None:
         res = await self.__session.scalars(
             select(OrderEventModel.version)
             .filter_by(order_id=order_id)
@@ -57,7 +62,7 @@ class OrderRepository(SQLAlchemyRepository, IOrderRepository):
             )
             self.__session.add(new_event)
 
-    async def upsert_projection(self, order: Order, customer_id: UUID):
+    async def upsert_projection(self, order: Order, customer_id: UUID) -> None:
         stmt = insert(OrderModel).values(
             id=order.id,
             status=order.status,
