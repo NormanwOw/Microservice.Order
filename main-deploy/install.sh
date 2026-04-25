@@ -1,10 +1,6 @@
 #!/bin/bash
 set -e
 
-if [ ! -f ".env-orders" ]; then
-  exit 0
-fi
-
 echo "Start install..."
 
 ORDERS_DB_NAME=orders-postgres-db
