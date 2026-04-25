@@ -24,7 +24,7 @@ services:
         condition: service_healthy
 
   orders-publisher:
-    image: publisher:latest
+    image: normanwow/publisher:latest
     restart: unless-stopped
     volumes:
       - .env-ms-orders:/app/deploy/.env

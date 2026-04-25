@@ -9,6 +9,7 @@ services:
     container_name: microservice.payment
     command: bash -c "alembic upgrade head && python3 src/main.py"
     networks:
+      - main-network
       - kafka-network
       - payment-network
     depends_on:
@@ -50,6 +51,8 @@ volumes:
   payment_postgres_data: {}
 
 networks:
+  main-network:
+    external: true
   payment-network: {}
   kafka-network:
     external: true

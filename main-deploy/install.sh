@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ -f ".env-orders" ]; then
+if [ ! -f ".env-orders" ]; then
   exit 0
 fi
 
@@ -117,6 +117,9 @@ EOF
 
 mv -f env-ms-payments .env-ms-payments
 chmod 600 .env-ms-payments
+
+docker network create main-network 2>/dev/null || true
+docker network create kafka-network 2>/dev/null || true
 
 docker compose -f docker-compose-kafka.yaml up -d
 echo "Waiting for start up Kafka and creating topics..."

@@ -17,6 +17,7 @@ services:
       retries: 5
       start_period: 15s
     networks:
+      - main-network
       - kafka-network
       - stocks-network
     depends_on:
@@ -58,6 +59,8 @@ volumes:
   stocks_postgres_data: {}
 
 networks:
+  main-network:
+    external: true
   stocks-network: {}
   kafka-network:
     external: true
